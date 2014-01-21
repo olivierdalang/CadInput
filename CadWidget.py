@@ -295,31 +295,31 @@ class CadWidget(QWidget):
 
         event.accept()
         if event.key() == Qt.Key_X:
-            if event.modifiers() == Qt.ShiftModifier:
+            if event.modifiers() == Qt.AltModifier:
                 self.lockX.toggle()
-            elif event.modifiers() == Qt.AltModifier:
+            elif event.modifiers() == Qt.ShiftModifier:
                 self.relX.toggle()
             else:
                 self.widX.setFocus()
                 self.widX.selectAll()
         elif event.key() == Qt.Key_Y:
-            if event.modifiers() == Qt.ShiftModifier:
+            if event.modifiers() == Qt.AltModifier:
                 self.lockY.toggle()
-            elif event.modifiers() == Qt.AltModifier:
+            elif event.modifiers() == Qt.ShiftModifier:
                 self.relY.toggle()
             else:
                 self.widY.setFocus()
                 self.widY.selectAll()
         elif event.key() == Qt.Key_A:
-            if event.modifiers() == Qt.ShiftModifier:
+            if event.modifiers() == Qt.AltModifier:
                 self.lockA.toggle()
-            elif event.modifiers() == Qt.AltModifier:
+            elif event.modifiers() == Qt.ShiftModifier:
                 self.relA.toggle()
             else:
                 self.widA.setFocus()
                 self.widA.selectAll()
         elif event.key() == Qt.Key_D:
-            if event.modifiers() == Qt.ShiftModifier:
+            if event.modifiers() == Qt.AltModifier:
                 self.lockD.toggle()
             else:
                 self.widD.setFocus()

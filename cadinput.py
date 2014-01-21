@@ -37,12 +37,13 @@ class CadInput(QObject):
 
     def __init__(self, iface):
         QObject.__init__(self)
-        QgsMessageLog.logMessage("init","CadInput")
         self.iface = iface
 
+    def initGui(self):
+
+        QgsMessageLog.logMessage("init","CadInput")
         QMessageBox(QMessageBox.Warning, "CadInput", "CadInput plugin is only here as a proof of concept. It DOES NOT WORK since all coordinates are at screen level precision. DO NOT USE IT !").exec_()
 
-    def initGui(self):
 
         # CadWidget : this widget displays the inputs allowing numerical entry
         self.cadwidget = CadWidget(self.iface)
@@ -61,6 +62,7 @@ class CadInput(QObject):
 
         # We want the ghostwidget to redraw when the values of the cadwidget are edited
         self.cadwidget.valueEdited.connect(self.ghostwidget.repaint)
+
 
     def unload(self):
         #UNLOAD seems no to work
