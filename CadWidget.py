@@ -54,6 +54,14 @@ class CadWidget(QWidget):
         self.widC.setText("construction")
         self.widC.setCheckable(True)
 
+        self.widPar = QToolButton()
+        self.widPar.setText("parralel")
+        self.widPar.setCheckable(True)
+
+        self.widPer = QToolButton()
+        self.widPer.setText("perpendicular")
+        self.widPer.setCheckable(True)
+
         ## Angular
 
         self.relD = QToolButton()
@@ -133,11 +141,19 @@ class CadWidget(QWidget):
         self.lockX.toggled.connect(self.valueEdited)
         self.lockA.toggled.connect(self.valueEdited)
 
+        #when parralel is selected, deselected perpendicular, and the otherway too
+        self.widPar.toggled.connect(lambda state: disableIfEnabled(state,self.widPer))
+        self.widPer.toggled.connect(lambda state: disableIfEnabled(state,self.widPar))
+
+
+
         # Layout the widgets
 
         r=0
         sublayout = QHBoxLayout()
         sublayout.addWidget(self.widC)
+        sublayout.addWidget(self.widPar)
+        sublayout.addWidget(self.widPer)
         gridLayout.addLayout(sublayout,r,0,1,4 )
 
         r+=1
@@ -240,6 +256,16 @@ class CadWidget(QWidget):
     @c.setter
     def c(self, value): self.widC.setChecked(value)
 
+    @property
+    def per(self): return self.widPer.isChecked()
+    @per.setter
+    def per(self, value): self.widPer.setChecked(value)
+
+    @property
+    def par(self): return self.widPar.isChecked()
+    @par.setter
+    def par(self, value): self.widPar.setChecked(value)
+
 
     def keyPressEvent(self, event):
         """
@@ -287,6 +313,12 @@ class CadWidget(QWidget):
             else:
                 lock.setChecked(True)
                 field.setText( str( v ) )
+
+    def unlockAll(self):
+        self.lx = False
+        self.ly = False
+        self.la = False
+        self.ld = False
 
 def floatOrZero(value):
     """

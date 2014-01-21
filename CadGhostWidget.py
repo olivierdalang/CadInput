@@ -22,6 +22,7 @@
 import math
 import ast
 import operator as op
+import time
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -45,6 +46,8 @@ class GhostWidget(QWidget):
 
         self.suspendForPan = False
 
+        self.constructionsInc = 0
+        self.segment = None
 
         self.p1 = QgsPoint() # previous click
         self.p2 = QgsPoint() # last click
@@ -64,47 +67,78 @@ class GhostWidget(QWidget):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton and not self.suspendForPan and self._active():
+            #CADINPUT is active
 
-            self.p3 = self.manageP3(self.toMap( event.pos() ) )
 
-            event = QMouseEvent( event.type(), self.toPixels(self.p2), event.button(), event.buttons(), event.modifiers() )
+            if self.cadwidget.par or self.cadwidget.per:
+                self.segment = self.toSegment( event.pos() )
+                QgsMessageLog.logMessage("found segment "+str(self.segment),"CadInput")
+                self.alignToSegment()
 
-            if not self.cadwidget.c:
-                self.iface.mapCanvas().mousePressEvent(event)
+            else:
+                self.p3 = self.manageP3(self.toMap( event.pos() ) )
 
-            self.p1 = self.p2
-            self.p2 = self.p3
+                if self.cadwidget.c:
+                    self.constructionsInc = min(self.constructionsInc+1, 2)
+
+                else:
+                    event = QMouseEvent( event.type(), self.toPixels(self.p2), event.button(), event.buttons(), event.modifiers() )
+                    self.iface.mapCanvas().mousePressEvent(event)
+                    self.constructionsInc = max(self.constructionsInc-1, 0)
+
+                self.p1 = self.p2
+                self.p2 = self.p3
+
         else:
+            #CADINPUT is inactive, simply forward event to mapCanvas
             if event.button() == Qt.MidButton:
                 self.suspendForPan = True
             self.iface.mapCanvas().mousePressEvent(event)
     def mouseReleaseEvent(self, event):
+
         if event.button() == Qt.LeftButton and not self.suspendForPan and self._active():
+            #CADINPUT is active
 
-            event = QMouseEvent( event.type(), self.toPixels(self.p2), event.button(), event.buttons(), event.modifiers() )
+            if self.cadwidget.par or self.cadwidget.per:
+                if self.segment is not None:
+                    self.cadwidget.par = False
+                    self.cadwidget.per = False
+            else:
+                if event.button() != Qt.MidButton:
+                    self.cadwidget.unlockAll()
 
-            if not self.cadwidget.c:
-                self.iface.mapCanvas().mouseReleaseEvent(event)
+                if self.cadwidget.c and self.segment is not None:
+                    pass
+                else:
+                    event = QMouseEvent( event.type(), self.toPixels(self.p2), event.button(), event.buttons(), event.modifiers() )
+                    self.iface.mapCanvas().mouseReleaseEvent(event)
+
         else:
-            if event.button() == Qt.RightButton:
-                self.cadwidget.lx = False
-                self.cadwidget.ly = False
-                self.cadwidget.la = False
-                self.cadwidget.ld = False
+            #CADINPUT is inactive, simply forward event to mapCanvas
             if event.button() == Qt.MidButton:
                 self.suspendForPan = False
             self.iface.mapCanvas().mouseReleaseEvent(event)
     def mouseMoveEvent(self, event):
-        if not self.suspendForPan and self._active():
 
-            self.p3 = self.manageP3(self.toMap( event.pos() ))
+        if not self.suspendForPan and self._active():
+            #CADINPUT is active
+
+            if self.cadwidget.par or self.cadwidget.per:
+
+                self.segment = self.toSegment( event.pos() )
+            else:
+                self.p3 = self.manageP3(self.toMap( event.pos() ))
+
+                if self.cadwidget.c:
+                    pass
+                else:
+                    event = QMouseEvent( event.type(), self.toPixels(self.p3), event.button(), event.buttons(), event.modifiers() )
+                    self.iface.mapCanvas().mouseMoveEvent(event)
+
             self.update() #runs paintEvent
 
-            event = QMouseEvent( event.type(), self.toPixels(self.p3), event.button(), event.buttons(), event.modifiers() )
-
-            if not self.cadwidget.c:
-                self.iface.mapCanvas().mouseMoveEvent(event)
         else:
+            #CADINPUT is inactive, simply forward event to mapCanvas
             self.iface.mapCanvas().mouseMoveEvent(event)
     def wheelEvent(self, event):
         self.iface.mapCanvas().wheelEvent(event)
@@ -223,10 +257,14 @@ class GhostWidget(QWidget):
         return p3
     def toMap(self, qpoint):
         snapper = QgsMapCanvasSnapper(self.iface.mapCanvas())
-        snapped = snapper.snapToBackgroundLayers(qpoint)
-        if len(snapped[1]) > 0:
+
+        (reval, snapped) = snapper.snapToCurrentLayer(qpoint,QgsSnapper.SnapToVertex)
+        if snapped == []:
+            (reval, snapped) = snapper.snapToBackgroundLayers(qpoint)
+
+        if snapped != []:
             # It seems to be necessary to create a new QgsPoint from the snapping result
-            return QgsPoint(snapped[1][0].snappedVertex.x(), snapped[1][0].snappedVertex.y())
+            return QgsPoint(snapped[0].snappedVertex.x(), snapped[0].snappedVertex.y())
 
         return self.iface.mapCanvas().getCoordinateTransform().toMapCoordinates( qpoint )
     def toPixels(self, qgspoint):
@@ -236,7 +274,33 @@ class GhostWidget(QWidget):
         except ValueError:
             #this happens sometimes at loading, it seems the mapCanvas is not ready and returns a point at NaN;NaN
             return QPoint()
+    def toSegment(self, qpoint):
+        snapper = QgsMapCanvasSnapper(self.iface.mapCanvas())
 
+        (reval, snapped) = snapper.snapToCurrentLayer(qpoint,QgsSnapper.SnapToSegment)
+        if snapped == []:
+            (reval, snapped) = snapper.snapToBackgroundLayers(qpoint)
+
+        if snapped != []:
+            return snapped[0]
+
+    def alignToSegment(self):
+
+        if self.segment is not None:
+
+            angle = math.atan2( self.segment.beforeVertex.y()-self.segment.afterVertex.y(), self.segment.beforeVertex.x()-self.segment.afterVertex.x() )
+            if self.cadwidget.ra:
+                lastangle = math.atan2(self.p2.y()-self.p1.y(),self.p2.x()-self.p1.x())
+                angle -= lastangle
+
+            if self.cadwidget.par:
+                pass
+            elif self.cadwidget.per:
+                angle += math.pi / 2.0
+
+            self.cadwidget.la = True
+            self.cadwidget.a = math.degrees(angle)      
+    
 
     #######################
     ##### PAINTING ########
@@ -253,7 +317,7 @@ class GhostWidget(QWidget):
 
     def paintEvent(self, paintEvent):
 
-        if math.isnan( self._tX(0) ):
+        if math.isnan( self._tX(0) ) or not self._active():
             #on loading QGIS, it seems QgsMapToPixel is not ready and return NaNs...
             return
 
@@ -262,7 +326,15 @@ class GhostWidget(QWidget):
 
         pNeutral = QPen(QColor(0,0,100,100), 1)  
         pLocked = QPen(QColor(100,100,255, 150), 2, Qt.DashLine) 
-        pConstruction = QPen(QColor(100,255,100, 150), 2, Qt.DashLine) 
+        pConstruction = QPen(QColor(100,255,100, 225), 2, Qt.DashLine)
+
+        if (self.cadwidget.per or self.cadwidget.par) and self.segment is not None:
+            painter.setPen( pConstruction )           
+
+            painter.drawLine(   self._tX( self.segment.beforeVertex.x()),
+                                self._tY( self.segment.beforeVertex.y()),
+                                self._tX( self.segment.afterVertex.x()),
+                                self._tY( self.segment.afterVertex.y())  )
 
         #Draw angle
         if self.cadwidget.la:
@@ -274,7 +346,6 @@ class GhostWidget(QWidget):
                 a0 = 0
                 a = -math.radians(self.cadwidget.a)
 
-
             painter.setPen( pNeutral )
             painter.drawArc(    self._tX( self.p2.x())-20,
                                 self._tY( self.p2.y())-20,
@@ -285,6 +356,7 @@ class GhostWidget(QWidget):
                                 self._tY( self.p2.y()),
                                 self._tX( self.p2.x())+60*math.cos(a0),
                                 self._tY( self.p2.y())+60*math.sin(a0)  )
+
             painter.setPen( pLocked )
             painter.drawLine(   self._tX( self.p2.x())-self.width()*math.cos(a),
                                 self._tY( self.p2.y())-self.width()*math.sin(a),
@@ -327,17 +399,19 @@ class GhostWidget(QWidget):
                                 y )
 
         #Draw constr
-        if self.cadwidget.c:
-
-            painter.setPen( pConstruction )
-            painter.drawLine(   self._tX( self.p1.x()),
-                                self._tY( self.p1.y()),
-                                self._tX( self.p2.x()),
-                                self._tY( self.p2.y())  )
+        painter.setPen( pConstruction )
+        if self.cadwidget.c or self.constructionsInc > 0:
             painter.drawLine(   self._tX( self.p2.x()),
                                 self._tY( self.p2.y()),
                                 self._tX( self.p3.x()),
                                 self._tY( self.p3.y())  )
+
+            if self.cadwidget.c or self.constructionsInc > 1:
+                painter.drawLine(   self._tX( self.p1.x()),
+                                    self._tY( self.p1.y()),
+                                    self._tX( self.p2.x()),
+                                    self._tY( self.p2.y())  )
+
 
         painter.drawLine(   self._tX( self.p3.x())-5,
                             self._tY( self.p3.y())-5,
