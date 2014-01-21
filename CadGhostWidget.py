@@ -58,6 +58,9 @@ class GhostWidget(QWidget):
         self.d = 0
         self.a = 0
 
+        # We need a layer to create snap points        
+        self.memoryLayer = None
+
     def _active(self):
         return self.cadwidget.c or (self.iface.mapCanvas().mapTool() is not None and self.iface.mapCanvas().mapTool().isEditTool())
 
@@ -83,6 +86,7 @@ class GhostWidget(QWidget):
 
                 else:
                     event = QMouseEvent( event.type(), self.toPixels(self.p2), event.button(), event.buttons(), event.modifiers() )
+                    self.createSnappingPoint()
                     self.iface.mapCanvas().mousePressEvent(event)
                     self.constructionsInc = max(self.constructionsInc-1, 0)
 
@@ -112,6 +116,7 @@ class GhostWidget(QWidget):
                 else:
                     event = QMouseEvent( event.type(), self.toPixels(self.p2), event.button(), event.buttons(), event.modifiers() )
                     self.iface.mapCanvas().mouseReleaseEvent(event)
+                    self.removeSnappingPoint()
 
         else:
             #CADINPUT is inactive, simply forward event to mapCanvas
@@ -277,6 +282,39 @@ class GhostWidget(QWidget):
             self.cadwidget.la = True
             self.cadwidget.a = math.degrees(angle)      
     
+    def createSnappingPoint(self):
+        """
+        This method creates a point that will be snapped by the next click so that the point will be at model precision and not at screen precision.
+        """
+        if self.memoryLayer is None:
+            self.memoryLayer = QgsVectorLayer("point", "snap_points_for_cadinput", "memory")
+            QgsMapLayerRegistry.instance().addMapLayers([self.memoryLayer])
+
+        provider = self.memoryLayer.dataProvider()
+
+        feature = QgsFeature()
+        feature.setGeometry( QgsGeometry.fromPoint( self.p3 ) )
+        provider.addFeatures([feature])
+
+        self.memoryLayer.updateExtents()
+    def removeSnappingPoint(self):
+        if self.memoryLayer is not None:
+
+            provider = self.memoryLayer.dataProvider()
+            features = provider.getFeatures( QgsFeatureRequest() )
+
+            for feature in features:
+                provider.deleteFeatures([feature.id()])
+
+            #QgsMapLayerRegistry.instance().removeMapLayer(self.memoryLayer.id())
+
+
+            #In 2.2, this will be :
+            #provider = self.memoryLayer.dataProvider()
+            #provider.deleteFeatures( self.memoryLayer.allFeatureIds() )
+
+
+
 
     #######################
     ##### PAINTING ########
