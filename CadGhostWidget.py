@@ -146,35 +146,11 @@ class GhostWidget(QWidget):
         """
         Shortcuts to the cadwidget
         """
-
-        if event.key() == Qt.Key_X:
-            if event.modifiers() == Qt.ShiftModifier:
-                self.cadwidget.lockX.toggle()
-            else:
-                self.cadwidget.widX.setFocus()
-                self.cadwidget.widX.selectAll()
-        elif event.key() == Qt.Key_Y:
-            if event.modifiers() == Qt.ShiftModifier:
-                self.cadwidget.lockY.toggle()
-            else:
-                self.cadwidget.widY.setFocus()
-                self.cadwidget.widY.selectAll()
-        elif event.key() == Qt.Key_A:
-            if event.modifiers() == Qt.ShiftModifier:
-                self.cadwidget.lockA.toggle()
-            else:
-                self.cadwidget.widA.setFocus()
-                self.cadwidget.widA.selectAll()
-        elif event.key() == Qt.Key_D:
-            if event.modifiers() == Qt.ShiftModifier:
-                self.cadwidget.lockD.toggle()
-            else:
-                self.cadwidget.widD.setFocus()
-                self.cadwidget.widD.selectAll()
-        elif event.key() == Qt.Key_C:
-            self.cadwidget.widC.toggle()
-        else:
+        self.cadwidget.keyPressEvent(event)
+        if not event.isAccepted():
             self.iface.mapCanvas().keyPressEvent(event)
+
+
 
 
     ###############################

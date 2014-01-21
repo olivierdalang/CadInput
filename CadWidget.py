@@ -187,6 +187,10 @@ class CadWidget(QWidget):
 
         self.setLayout(gridLayout)
 
+
+    """
+    Those editfields are made accessible by properties to lighten the code in ghostwidget
+    """
     # Basic properties
     @property
     def x(self):return floatOrZero(self.widX.text())
@@ -272,6 +276,7 @@ class CadWidget(QWidget):
         This implements the internal shortcuts when the focus is in the widget (e.g. on a QPushButton)
         """
 
+        event.accept()
         if event.key() == Qt.Key_X:
             if event.modifiers() == Qt.ShiftModifier:
                 self.lockX.toggle()
@@ -298,8 +303,15 @@ class CadWidget(QWidget):
                 self.widD.selectAll()
         elif event.key() == Qt.Key_C:
             self.widC.toggle()
+        elif event.key() == Qt.Key_P:
+            if not self.par and not self.per:
+                self.par = True
+            elif self.par:
+                self.per = True
+            elif self.per:
+                self.per = False
         else:
-            QWidget.keyPressEvent(self,event)
+            event.ignore()
 
     def validateField(self, field, lock):
         s = field.text()
@@ -338,33 +350,9 @@ class QLineEditWithShortcut(QLineEdit):
 
     def keyPressEvent(self, event):
         self.textEdited.emit(self.text())
-        if event.key() == Qt.Key_X:
-            if event.modifiers() == Qt.ShiftModifier:
-                self.cadwidget.lockX.toggle()
-            else:
-                self.cadwidget.widX.setFocus()
-                self.cadwidget.widX.selectAll()
-        elif event.key() == Qt.Key_Y:
-            if event.modifiers() == Qt.ShiftModifier:
-                self.cadwidget.lockY.toggle()
-            else:
-                self.cadwidget.widY.setFocus()
-                self.cadwidget.widY.selectAll()
-        elif event.key() == Qt.Key_A:
-            if event.modifiers() == Qt.ShiftModifier:
-                self.cadwidget.lockA.toggle()
-            else:
-                self.cadwidget.widA.setFocus()
-                self.cadwidget.widA.selectAll()
-        elif event.key() == Qt.Key_D:
-            if event.modifiers() == Qt.ShiftModifier:
-                self.cadwidget.lockD.toggle()
-            else:
-                self.cadwidget.widD.setFocus()
-                self.cadwidget.widD.selectAll()
-        elif event.key() == Qt.Key_C:
-            self.cadwidget.widC.toggle()
-        else:
+        
+        self.cadwidget.keyPressEvent(event)
+        if not event.isAccepted():
             QLineEdit.keyPressEvent(self,event)
 
 
