@@ -35,159 +35,6 @@ class CadWidget(QWidget):
 
     valueEdited = pyqtSignal()
 
-    def __init__(self, iface):
-        QWidget.__init__(self)
-
-        self.iface = iface
-
-        # We want to get focus so KeyPressEvents can be processed (useful for internal shortcuts)
-        self.setFocusPolicy(Qt.ClickFocus)
-
-        gridLayout = QGridLayout() 
-
-
-        # Create the widgets
-
-        ## General
-
-        self.widC = QToolButton()
-        self.widC.setText("construction")
-        self.widC.setCheckable(True)
-
-        self.widPar = QToolButton()
-        self.widPar.setText("parralel")
-        self.widPar.setCheckable(True)
-
-        self.widPer = QToolButton()
-        self.widPer.setText("perpendicular")
-        self.widPer.setCheckable(True)
-
-        ## Angular
-
-        self.relD = QToolButton()
-        self.relD.setText("D")
-        self.relD.setCheckable(True)
-        self.relD.setChecked(True)
-        self.relD.setEnabled(False)
-
-        self.widD = QLineEditWithShortcut(self)
-        self.lockD = QToolButton()
-        self.lockD.setText("L")
-        self.lockD.setCheckable(True)
-
-        self.relA = QToolButton()
-        self.relA.setText("D")
-        self.relA.setCheckable(True)
-        self.relA.setChecked(True)
-
-        self.widA = QLineEditWithShortcut(self)
-        self.lockA = QToolButton()
-        self.lockA.setText("L")
-        self.lockA.setCheckable(True)
-
-        ## Cartesian
-
-        self.relX = QToolButton()
-        self.relX.setText("D")
-        self.relX.setCheckable(True)
-        self.relX.setChecked(True)
-
-        self.widX = QLineEditWithShortcut(self)
-        self.lockX = QToolButton()
-        self.lockX.setText("L")
-        self.lockX.setCheckable(True)
-
-        self.relY = QToolButton()
-        self.relY.setText("D")
-        self.relY.setCheckable(True)
-        self.relY.setChecked(True)
-
-        self.widY = QLineEditWithShortcut(self)
-        self.lockY = QToolButton()
-        self.lockY.setText("L")
-        self.lockY.setCheckable(True)
-
-
-
-        # Connect the signals
-
-        #when return is pressed, we want to lock the value
-        self.widD.returnPressed.connect(lambda: self.validateField(self.widD, self.lockD))
-        self.widA.returnPressed.connect(lambda: self.validateField(self.widA, self.lockA))
-        self.widX.returnPressed.connect(lambda: self.validateField(self.widX, self.lockX))
-        self.widY.returnPressed.connect(lambda: self.validateField(self.widY, self.lockY))
-
-        #when an angular field is locked, we want to unlock the cartesian fields, and the other way too
-        def disableIfEnabled(state, target):
-            if state: target.setChecked(False)
-
-        self.lockY.toggled.connect(lambda state: disableIfEnabled(state,self.lockD))
-        self.lockY.toggled.connect(lambda state: disableIfEnabled(state,self.lockA))
-        self.lockX.toggled.connect(lambda state: disableIfEnabled(state,self.lockD))
-        self.lockX.toggled.connect(lambda state: disableIfEnabled(state,self.lockA))
-
-        self.lockD.toggled.connect(lambda state: disableIfEnabled(state,self.lockX))
-        self.lockD.toggled.connect(lambda state: disableIfEnabled(state,self.lockY))
-        self.lockA.toggled.connect(lambda state: disableIfEnabled(state,self.lockX))
-        self.lockA.toggled.connect(lambda state: disableIfEnabled(state,self.lockY))
-
-        #when a field is edited by the user, we fire the valueEdited signal to be able notify the ghostwidget it must update 
-        self.widD.textEdited.connect(self.valueEdited)
-        self.widA.textEdited.connect(self.valueEdited)
-        self.widX.textEdited.connect(self.valueEdited)
-        self.widY.textEdited.connect(self.valueEdited)
-        self.lockD.toggled.connect(self.valueEdited)
-        self.lockA.toggled.connect(self.valueEdited)
-        self.lockX.toggled.connect(self.valueEdited)
-        self.lockA.toggled.connect(self.valueEdited)
-
-        #when parralel is selected, deselected perpendicular, and the otherway too
-        self.widPar.toggled.connect(lambda state: disableIfEnabled(state,self.widPer))
-        self.widPer.toggled.connect(lambda state: disableIfEnabled(state,self.widPar))
-
-
-
-        # Layout the widgets
-
-        r=0
-        sublayout = QHBoxLayout()
-        sublayout.addWidget(self.widC)
-        sublayout.addWidget(self.widPar)
-        sublayout.addWidget(self.widPer)
-        gridLayout.addLayout(sublayout,r,0,1,4 )
-
-        r+=1
-        gridLayout.addWidget(self.relD,r,0 )
-        gridLayout.addWidget(QLabel("length"),r,1 )
-        gridLayout.addWidget(self.widD,r,2 )
-        gridLayout.addWidget(self.lockD,r,3 )
-
-        r+=1
-        gridLayout.addWidget(self.relA,r,0 )
-        gridLayout.addWidget(QLabel("angle"),r,1 )
-        gridLayout.addWidget(self.widA,r,2 )
-        gridLayout.addWidget(self.lockA,r,3 )
-
-        r+=1
-        gridLayout.addWidget(self.relX,r,0 )
-        gridLayout.addWidget(QLabel("x"),r,1 )
-        gridLayout.addWidget(self.widX,r,2 )
-        gridLayout.addWidget(self.lockX,r,3 )
-
-        r+=1
-        gridLayout.addWidget(self.relY,r,0 )
-        gridLayout.addWidget(QLabel("y"),r,1 )
-        gridLayout.addWidget(self.widY,r,2 )
-        gridLayout.addWidget(self.lockY,r,3 )
-
-        r+=1
-        self.click = QPushButton()
-        self.click.setText("click")
-        gridLayout.addWidget(self.click,r,0,1,4 )
-
-        self.setLayout(gridLayout)
-
-
     """
     Those editfields are made accessible by properties to lighten the code in ghostwidget
     """
@@ -270,7 +117,177 @@ class CadWidget(QWidget):
     @par.setter
     def par(self, value): self.widPar.setChecked(value)
 
+    def __init__(self, iface):
+        QWidget.__init__(self)
 
+        self.iface = iface
+
+        # We want to get focus so KeyPressEvents can be processed (useful for internal shortcuts)
+        self.setFocusPolicy(Qt.ClickFocus)
+
+        gridLayout = QGridLayout() 
+
+
+        # Create the widgets
+
+        ## General
+
+        self.widC = QToolButton()
+        self.widC.setText("construction")
+        self.widC.setCheckable(True)
+        self.widC.setToolTip("C")
+
+        self.widPar = QToolButton()
+        self.widPar.setText("parralel")
+        self.widPar.setCheckable(True)
+        self.widPar.setToolTip("P")
+
+        self.widPer = QToolButton()
+        self.widPer.setText("perpendicular")
+        self.widPer.setCheckable(True)
+        self.widPer.setToolTip("P")
+
+        ## Angular
+
+        self.relD = QToolButton()
+        self.relD.setText("D")
+        self.relD.setCheckable(True)
+        self.relD.setChecked(True)
+        self.relD.setEnabled(False)
+        self.relD.setToolTip("-")
+
+        self.widD = QLineEditWithShortcut(self)
+        self.widD.setToolTip("D")
+        
+        self.lockD = QToolButton()
+        self.lockD.setText("L")
+        self.lockD.setCheckable(True)
+        self.lockD.setToolTip("Shift+D")
+
+        self.relA = QToolButton()
+        self.relA.setText("D")
+        self.relA.setCheckable(True)
+        self.relA.setChecked(True)
+        self.relA.setToolTip("Alt+A")
+
+        self.widA = QLineEditWithShortcut(self)
+        self.widA.setToolTip("A")
+
+        self.lockA = QToolButton()
+        self.lockA.setText("L")
+        self.lockA.setCheckable(True)
+        self.lockA.setToolTip("Shift+A")
+
+        ## Cartesian
+
+        self.relX = QToolButton()
+        self.relX.setText("D")
+        self.relX.setCheckable(True)
+        self.relX.setChecked(True)
+        self.relX.setToolTip("Alt+X")
+
+        self.widX = QLineEditWithShortcut(self)
+        self.widX.setToolTip("X")
+
+        self.lockX = QToolButton()
+        self.lockX.setText("L")
+        self.lockX.setCheckable(True)
+        self.lockX.setToolTip("Shift+X")
+
+        self.relY = QToolButton()
+        self.relY.setText("D")
+        self.relY.setCheckable(True)
+        self.relY.setChecked(True)
+        self.relY.setToolTip("Alt+Y")
+
+        self.widY = QLineEditWithShortcut(self)
+        self.widY.setToolTip("Y")
+
+        self.lockY = QToolButton()
+        self.lockY.setText("L")
+        self.lockY.setCheckable(True)
+        self.lockY.setToolTip("Shift+Y")
+
+
+
+        # Connect the signals
+
+        #when return is pressed, we want to lock the value
+        self.widD.returnPressed.connect(lambda: self.validateField(self.widD, self.lockD))
+        self.widA.returnPressed.connect(lambda: self.validateField(self.widA, self.lockA))
+        self.widX.returnPressed.connect(lambda: self.validateField(self.widX, self.lockX))
+        self.widY.returnPressed.connect(lambda: self.validateField(self.widY, self.lockY))
+
+        #when an angular field is locked, we want to unlock the cartesian fields, and the other way too
+        def disableIfEnabled(state, target):
+            if state: target.setChecked(False)
+
+        self.lockY.toggled.connect(lambda state: disableIfEnabled(state,self.lockD))
+        self.lockY.toggled.connect(lambda state: disableIfEnabled(state,self.lockA))
+        self.lockX.toggled.connect(lambda state: disableIfEnabled(state,self.lockD))
+        self.lockX.toggled.connect(lambda state: disableIfEnabled(state,self.lockA))
+
+        self.lockD.toggled.connect(lambda state: disableIfEnabled(state,self.lockX))
+        self.lockD.toggled.connect(lambda state: disableIfEnabled(state,self.lockY))
+        self.lockA.toggled.connect(lambda state: disableIfEnabled(state,self.lockX))
+        self.lockA.toggled.connect(lambda state: disableIfEnabled(state,self.lockY))
+
+        #when a field is edited by the user, we fire the valueEdited signal to be able notify the ghostwidget it must update 
+        self.widD.textEdited.connect(self.valueEdited)
+        self.widA.textEdited.connect(self.valueEdited)
+        self.widX.textEdited.connect(self.valueEdited)
+        self.widY.textEdited.connect(self.valueEdited)
+        self.lockD.toggled.connect(self.valueEdited)
+        self.lockA.toggled.connect(self.valueEdited)
+        self.lockX.toggled.connect(self.valueEdited)
+        self.lockA.toggled.connect(self.valueEdited)
+
+        #when parralel is selected, deselected perpendicular, and the otherway too
+        self.widPar.toggled.connect(lambda state: disableIfEnabled(state,self.widPer))
+        self.widPer.toggled.connect(lambda state: disableIfEnabled(state,self.widPar))
+
+
+
+        # Layout the widgets
+
+        r=0
+        sublayout = QHBoxLayout()
+        sublayout.addWidget(self.widC)
+        sublayout.addWidget(self.widPar)
+        sublayout.addWidget(self.widPer)
+        gridLayout.addLayout(sublayout,r,0,1,4 )
+
+        r+=1
+        gridLayout.addWidget(self.relD,r,0 )
+        gridLayout.addWidget(QLabel("length"),r,1 )
+        gridLayout.addWidget(self.widD,r,2 )
+        gridLayout.addWidget(self.lockD,r,3 )
+
+        r+=1
+        gridLayout.addWidget(self.relA,r,0 )
+        gridLayout.addWidget(QLabel("angle"),r,1 )
+        gridLayout.addWidget(self.widA,r,2 )
+        gridLayout.addWidget(self.lockA,r,3 )
+
+        r+=1
+        gridLayout.addWidget(self.relX,r,0 )
+        gridLayout.addWidget(QLabel("x"),r,1 )
+        gridLayout.addWidget(self.widX,r,2 )
+        gridLayout.addWidget(self.lockX,r,3 )
+
+        r+=1
+        gridLayout.addWidget(self.relY,r,0 )
+        gridLayout.addWidget(QLabel("y"),r,1 )
+        gridLayout.addWidget(self.widY,r,2 )
+        gridLayout.addWidget(self.lockY,r,3 )
+
+        r+=1
+        self.click = QPushButton()
+        self.click.setText("click")
+        gridLayout.addWidget(self.click,r,0,1,4 )
+
+        self.setLayout(gridLayout)
+    
     def keyPressEvent(self, event):
         """
         This implements the internal shortcuts when the focus is in the widget (e.g. on a QPushButton)
@@ -280,18 +297,24 @@ class CadWidget(QWidget):
         if event.key() == Qt.Key_X:
             if event.modifiers() == Qt.ShiftModifier:
                 self.lockX.toggle()
+            elif event.modifiers() == Qt.AltModifier:
+                self.relX.toggle()
             else:
                 self.widX.setFocus()
                 self.widX.selectAll()
         elif event.key() == Qt.Key_Y:
             if event.modifiers() == Qt.ShiftModifier:
                 self.lockY.toggle()
+            elif event.modifiers() == Qt.AltModifier:
+                self.relY.toggle()
             else:
                 self.widY.setFocus()
                 self.widY.selectAll()
         elif event.key() == Qt.Key_A:
             if event.modifiers() == Qt.ShiftModifier:
                 self.lockA.toggle()
+            elif event.modifiers() == Qt.AltModifier:
+                self.relA.toggle()
             else:
                 self.widA.setFocus()
                 self.widA.selectAll()
