@@ -56,9 +56,7 @@ class GhostWidget(QWidget):
         self.a = 0
 
     def _active(self):
-        if self.iface.mapCanvas().mapTool() is not None:
-            return self.iface.mapCanvas().mapTool().isEditTool()
-        return None
+        return self.cadwidget.c or (self.iface.mapCanvas().mapTool() is not None and self.iface.mapCanvas().mapTool().isEditTool())
 
     ###########################
     ##### INPUT EVENTS ########
@@ -140,7 +138,7 @@ class GhostWidget(QWidget):
                 self.cadwidget.widD.setFocus()
                 self.cadwidget.widD.selectAll()
         elif event.key() == Qt.Key_C:
-            self.cadwidget.constr.toggle()
+            self.cadwidget.widC.toggle()
         else:
             self.iface.mapCanvas().keyPressEvent(event)
 
@@ -337,14 +335,14 @@ class GhostWidget(QWidget):
                                 self._tX( self.p3.x()),
                                 self._tY( self.p3.y())  )
 
-            painter.drawLine(   self._tX( self.p3.x())-5,
-                                self._tY( self.p3.y())-5,
-                                self._tX( self.p3.x())+5,
-                                self._tY( self.p3.y())+5  )
-            painter.drawLine(   self._tX( self.p3.x())-5,
-                                self._tY( self.p3.y())+5,
-                                self._tX( self.p3.x())+5,
-                                self._tY( self.p3.y())-5  )
+        painter.drawLine(   self._tX( self.p3.x())-5,
+                            self._tY( self.p3.y())-5,
+                            self._tX( self.p3.x())+5,
+                            self._tY( self.p3.y())+5  )
+        painter.drawLine(   self._tX( self.p3.x())-5,
+                            self._tY( self.p3.y())+5,
+                            self._tX( self.p3.x())+5,
+                            self._tY( self.p3.y())-5  )
 
 
 
