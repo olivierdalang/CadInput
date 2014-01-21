@@ -253,6 +253,10 @@ class GhostWidget(QWidget):
 
     def paintEvent(self, paintEvent):
 
+        if math.isnan( self._tX(0) ):
+            #on loading QGIS, it seems QgsMapToPixel is not ready and return NaNs...
+            return
+
         painter = QPainter(self)
         painter.setRenderHints(QPainter.Antialiasing)
 
