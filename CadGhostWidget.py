@@ -72,14 +72,12 @@ class GhostWidget(QWidget):
         if event.button() == Qt.LeftButton and not self.suspendForPan and self._active():
             #CADINPUT is active
 
+            self.segment = self.toSegment( event.pos() )
+            self.p3 = self.manageP3(self.toMap( event.pos() ) )
 
             if self.cadwidget.par or self.cadwidget.per:
-                self.segment = self.toSegment( event.pos() )
-                QgsMessageLog.logMessage("found segment "+str(self.segment),"CadInput")
                 self.alignToSegment()
-
             else:
-                self.p3 = self.manageP3(self.toMap( event.pos() ) )
 
                 if self.cadwidget.c:
                     self.constructionsInc = min(self.constructionsInc+1, 2)
@@ -128,11 +126,12 @@ class GhostWidget(QWidget):
         if not self.suspendForPan and self._active():
             #CADINPUT is active
 
-            if self.cadwidget.par or self.cadwidget.per:
+            self.segment = self.toSegment( event.pos() )
+            self.p3 = self.manageP3(self.toMap( event.pos() ))
 
-                self.segment = self.toSegment( event.pos() )
+            if self.cadwidget.par or self.cadwidget.per:
+                pass
             else:
-                self.p3 = self.manageP3(self.toMap( event.pos() ))
 
                 if self.cadwidget.c:
                     pass
@@ -174,6 +173,26 @@ class GhostWidget(QWidget):
                 p3.setX( self.p2.x() + self.cadwidget.x )
             else:
                 p3.setX( self.cadwidget.x )
+   
+            if self.segment is not None and not self.cadwidget.ly:
+                # we will magnietize to the intersection of that segment and the lockedX !
+                x = p3.x()
+
+                ax = self.segment[0].x()
+                ay = self.segment[0].y()
+                bx = self.segment[1].x()
+                by = self.segment[1].y()
+
+                dx = bx - ax
+                dy = by - ay
+
+                if dy==0:
+                    y = ay
+                else:
+                    y = ay+(dy * (x-ax) ) / dx
+
+                p3.setY( y )
+
         else:
             if self.cadwidget.rx:
                 self.cadwidget.x = p3.x()-self.p2.x()
@@ -186,6 +205,26 @@ class GhostWidget(QWidget):
                 p3.setY( self.p2.y() + self.cadwidget.y )
             else:
                 p3.setY( self.cadwidget.y )
+
+            if self.segment is not None and not self.cadwidget.lx:  
+                # we will magnietize to the intersection of that segment and the lockedY !              
+
+                y = p3.y()
+
+                ax = self.segment[0].x()
+                ay = self.segment[0].y()
+                bx = self.segment[1].x()
+                by = self.segment[1].y()
+
+                dx = bx - ax
+                dy = by - ay
+
+                if dy==0:
+                    x = ax
+                else:
+                    x = ax+(dx * (y-ay) ) / dy
+
+                p3.setX( x )
         else:
             if self.cadwidget.ry:
                 self.cadwidget.y = p3.y()-self.p2.y()
@@ -203,26 +242,25 @@ class GhostWidget(QWidget):
                 # We compute the angle relative to the last segment (0° is aligned with last segment)
                 lastA = math.atan2(self.p2.y() - self.p1.y(), self.p2.x() - self.p1.x())
                 a = lastA+a
-                cosA = math.cos( a )
-                sinA = math.sin( a )
-                v1 = [ cosA, sinA ]
-                v2 = [ dx, dy ]
-                vP = v1[0]*v2[0]+v1[1]*v2[1]
-                p3.set( self.p2.x()+cosA*vP, self.p2.y()+sinA*vP)
-            else:
-                # We compute the absolute angle (0° is horizontal to the right)
-                cosA = math.cos( a )
-                sinA = math.sin( a )
-                v1 = [ cosA, sinA ]
-                v2 = [ dx, dy ]
-                vP = v1[0]*v2[0]+v1[1]*v2[1]
-                p3.set( self.p2.x()+cosA*vP, self.p2.y()+sinA*vP)
+
+            cosA = math.cos( a )
+            sinA = math.sin( a )
+            v1 = [ cosA, sinA ]
+            v2 = [ dx, dy ]
+            vP = v1[0]*v2[0]+v1[1]*v2[1]
+            p3.set( self.p2.x()+cosA*vP, self.p2.y()+sinA*vP)
+
+            if self.segment is not None and not self.cadwidget.ld:  
+                # we will magnietize to the intersection of that segment and the lockedAngle !  
+                #TODO !
+                pass
         else:
             if self.cadwidget.ra:
                 lastA = math.atan2(self.p2.y() - self.p1.y(), self.p2.x() - self.p1.x())
                 self.cadwidget.a = (math.atan2( dy, dx )-lastA)/math.pi*180
             else:
                 self.cadwidget.a = math.atan2( dy, dx )/math.pi*180
+
 
 
         #D
@@ -232,6 +270,13 @@ class GhostWidget(QWidget):
         if self.cadwidget.ld:
             vP = self.cadwidget.d / math.sqrt( dx*dx + dy*dy )
             p3.set( self.p2.x()+dx*vP,  self.p2.y()+dy*vP )
+
+            if self.segment is not None and not self.cadwidget.la:  
+                # we will magnietize to the intersection of that segment and the lockedDistance !  
+                #TODO !
+
+                
+                pass
         else:
             self.cadwidget.d = math.sqrt( dx*dx + dy*dy )
 
@@ -239,13 +284,19 @@ class GhostWidget(QWidget):
     def toMap(self, qpoint):
         snapper = QgsMapCanvasSnapper(self.iface.mapCanvas())
 
-        (reval, snapped) = snapper.snapToCurrentLayer(qpoint,QgsSnapper.SnapToVertex)
+        (reval, snapped) = snapper.snapToCurrentLayer(qpoint,QgsSnapper.SnapToVertexAndSegment)
         if snapped == []:
             (reval, snapped) = snapper.snapToBackgroundLayers(qpoint)
 
         if snapped != []:
-            # It seems to be necessary to create a new QgsPoint from the snapping result
-            return QgsPoint(snapped[0].snappedVertex.x(), snapped[0].snappedVertex.y())
+            snapResult = snapped[0]
+            if snapResult.beforeVertex is not None and snapResult.afterVertex is not None:
+                #the snap result is a segment !
+                pass
+            else:
+                #the snap result is a point !
+                # It seems to be necessary to create a new QgsPoint from the snapping result
+                return QgsPoint(snapResult.snappedVertex.x(),snapResult.snappedVertex.y())
 
         return self.iface.mapCanvas().getCoordinateTransform().toMapCoordinates( qpoint )
     def toPixels(self, qgspoint):
@@ -255,6 +306,7 @@ class GhostWidget(QWidget):
         except ValueError:
             #this happens sometimes at loading, it seems the mapCanvas is not ready and returns a point at NaN;NaN
             return QPoint()
+
     def toSegment(self, qpoint):
         snapper = QgsMapCanvasSnapper(self.iface.mapCanvas())
 
@@ -263,13 +315,26 @@ class GhostWidget(QWidget):
             (reval, snapped) = snapper.snapToBackgroundLayers(qpoint)
 
         if snapped != []:
-            return snapped[0]
+            snapResult = snapped[0]
+            if snapResult.beforeVertex is not None and snapResult.afterVertex is not None:
+                #QgsMessageLog.logMessage("Segment seeked and found !","CadInput")
+                #the snap result is a segment !
+                return ( snapResult.beforeVertex, snapResult.afterVertex )
+            else:
+                #QgsMessageLog.logMessage("Segment seeked but point found :(","CadInput")
+                #the snap result is a point !
+                pass
+        else:
+            #QgsMessageLog.logMessage("Segment seeked but nothgin found :(","CadInput")
+            pass
+
+        return None
 
     def alignToSegment(self):
 
         if self.segment is not None:
 
-            angle = math.atan2( self.segment.beforeVertex.y()-self.segment.afterVertex.y(), self.segment.beforeVertex.x()-self.segment.afterVertex.x() )
+            angle = math.atan2( self.segment[0].y()-self.segment[1].y(), self.segment[0].x()-self.segment[1].x() )
             if self.cadwidget.ra:
                 lastangle = math.atan2(self.p2.y()-self.p1.y(),self.p2.x()-self.p1.x())
                 angle -= lastangle
@@ -341,14 +406,15 @@ class GhostWidget(QWidget):
         pNeutral = QPen(QColor(0,0,100,100), 1)  
         pLocked = QPen(QColor(100,100,255, 150), 2, Qt.DashLine) 
         pConstruction = QPen(QColor(100,255,100, 225), 2, Qt.DashLine)
+        pCursor = QPen(QColor(100,255,100, 225), 2)
 
         if (self.cadwidget.per or self.cadwidget.par) and self.segment is not None:
             painter.setPen( pConstruction )           
 
-            painter.drawLine(   self._tX( self.segment.beforeVertex.x()),
-                                self._tY( self.segment.beforeVertex.y()),
-                                self._tX( self.segment.afterVertex.x()),
-                                self._tY( self.segment.afterVertex.y())  )
+            painter.drawLine(   self._tX( self.segment[0].x()),
+                                self._tY( self.segment[0].y()),
+                                self._tX( self.segment[1].x()),
+                                self._tY( self.segment[1].y())  )
 
         #Draw angle
         if self.cadwidget.la:
@@ -426,7 +492,7 @@ class GhostWidget(QWidget):
                                     self._tX( self.p2.x()),
                                     self._tY( self.p2.y())  )
 
-
+        painter.setPen( pCursor )
         painter.drawLine(   self._tX( self.p3.x())-5,
                             self._tY( self.p3.y())-5,
                             self._tX( self.p3.x())+5,
@@ -435,7 +501,6 @@ class GhostWidget(QWidget):
                             self._tY( self.p3.y())+5,
                             self._tX( self.p3.x())+5,
                             self._tY( self.p3.y())-5  )
-
 
 
 
