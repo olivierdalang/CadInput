@@ -42,8 +42,6 @@ class CadInput(QObject):
     def initGui(self):
 
         QgsMessageLog.logMessage("init","CadInput")
-        QMessageBox(QMessageBox.Warning, "CadInput", "CadInput plugin is only here as a proof of concept. It DOES NOT WORK since all coordinates are at screen level precision. DO NOT USE IT !").exec_()
-
 
         # CadWidget : this widget displays the inputs allowing numerical entry
         self.cadwidget = CadWidget(self.iface)

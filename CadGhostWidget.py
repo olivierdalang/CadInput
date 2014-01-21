@@ -178,18 +178,18 @@ class GhostWidget(QWidget):
                 # we will magnietize to the intersection of that segment and the lockedX !
                 x = p3.x()
 
-                ax = self.segment[0].x()
-                ay = self.segment[0].y()
-                bx = self.segment[1].x()
-                by = self.segment[1].y()
+                x1 = self.segment[0].x()
+                y1 = self.segment[0].y()
+                x2 = self.segment[1].x()
+                y2 = self.segment[1].y()
 
-                dx = bx - ax
-                dy = by - ay
+                dx = x2 - x1
+                dy = y2 - y1
 
                 if dy==0:
-                    y = ay
+                    y = y1
                 else:
-                    y = ay+(dy * (x-ax) ) / dx
+                    y = y1+(dy * (x-x1) ) / dx
 
                 p3.setY( y )
 
@@ -211,18 +211,18 @@ class GhostWidget(QWidget):
 
                 y = p3.y()
 
-                ax = self.segment[0].x()
-                ay = self.segment[0].y()
-                bx = self.segment[1].x()
-                by = self.segment[1].y()
+                x1 = self.segment[0].x()
+                y1 = self.segment[0].y()
+                x2 = self.segment[1].x()
+                y2 = self.segment[1].y()
 
-                dx = bx - ax
-                dy = by - ay
+                dx = x2 - x1
+                dy = y2 - y1
 
                 if dy==0:
-                    x = ax
+                    x = x1
                 else:
-                    x = ax+(dx * (y-ay) ) / dy
+                    x = x1+(dx * (y-y1) ) / dy
 
                 p3.setX( x )
         else:
@@ -230,7 +230,6 @@ class GhostWidget(QWidget):
                 self.cadwidget.y = p3.y()-self.p2.y()
             else:
                 self.cadwidget.y = p3.y()
-
 
         #A
         dx =  p3.x()-self.p2.x()
@@ -251,9 +250,16 @@ class GhostWidget(QWidget):
             p3.set( self.p2.x()+cosA*vP, self.p2.y()+sinA*vP)
 
             if self.segment is not None and not self.cadwidget.ld:  
-                # we will magnietize to the intersection of that segment and the lockedAngle !  
-                #TODO !
-                pass
+                # we will magnietize to the intersection of that segment and the lockedAngle !
+
+                l1 = QLineF(self.p2.x(), self.p2.y(), self.p2.x()+math.cos(a), self.p2.y()+math.sin(a))
+                l2 = QLineF(self.segment[0].x(), self.segment[0].y(), self.segment[1].x() ,self.segment[1].y())
+
+                intP = QPointF()
+                if l1.intersect(l2, intP) == QLineF.UnboundedIntersection:
+                    p3.setX( intP.x() )
+                    p3.setY( intP.y() )
+
         else:
             if self.cadwidget.ra:
                 lastA = math.atan2(self.p2.y() - self.p1.y(), self.p2.x() - self.p1.x())
@@ -272,11 +278,49 @@ class GhostWidget(QWidget):
             p3.set( self.p2.x()+dx*vP,  self.p2.y()+dy*vP )
 
             if self.segment is not None and not self.cadwidget.la:  
-                # we will magnietize to the intersection of that segment and the lockedDistance !  
-                #TODO !
+                # we will magnietize to the intersection of that segment and the lockedDistance !
+                # formula taken from http://mathworld.wolfram.com/Circle-LineIntersection.html
 
+                xo = self.p2.x()
+                yo = self.p2.y()
+
+                x1 = self.segment[0].x()-xo
+                y1 = self.segment[0].y()-yo
+                x2 = self.segment[1].x()-xo
+                y2 = self.segment[1].y()-yo
+
+                r = self.cadwidget.d
+
+                dx = x2-x1
+                dy = y2-y1
+                dr = math.sqrt(dx**2+dy**2)
+                d = x1*y2-x2*y1
+
+                def sgn(x): return -1 if x<0 else 1
+
+                DISC = r**2 * dr**2 - d**2
+
+                if DISC<=0:
+                    #no intersection or tangeant
+                    pass
+                else:
+                    #first possible point
+                    ax = xo  +  (d*dy+sgn(dy)*dx*math.sqrt(r**2*dr**2-d**2))/(dr**2)
+                    ay = yo  +  (-d*dx+abs(dy)*math.sqrt(r**2*dr**2-d**2))/(dr**2)
+
+                    #second possible point
+                    bx = xo  +  (d*dy-sgn(dy)*dx*math.sqrt(r**2*dr**2-d**2))/(dr**2)
+                    by = yo  +  (-d*dx-abs(dy)*math.sqrt(r**2*dr**2-d**2))/(dr**2)
+
+                    #we snap to the nearest intersection
+                    if (ax-p3.x())**2+(ay-p3.y())**2 >= (bx-p3.x())**2+(by-p3.y())**2:
+                        p3.setX( bx )
+                        p3.setY( by )
+                    else:
+                        p3.setX( ax )
+                        p3.setY( ay )
                 
-                pass
+                
         else:
             self.cadwidget.d = math.sqrt( dx*dx + dy*dy )
 
