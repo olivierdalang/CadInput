@@ -28,7 +28,6 @@ import math
 import ast
 import operator as op
 
-
 class CadWidget(QWidget):
     """
     This is CadInput's main GUI widget. It displays the edit fields for entering numerical coordinates.
@@ -174,22 +173,22 @@ class CadWidget(QWidget):
 
     # Basic properties
     @property
-    def x(self):return float(self.widX.text())
+    def x(self):return floatOrZero(self.widX.text())
     @x.setter
     def x(self, value): self.widX.setText(str(value))
 
     @property
-    def y(self):return float(self.widY.text())
+    def y(self):return floatOrZero(self.widY.text())
     @y.setter
     def y(self, value): self.widY.setText(str(value))
 
     @property
-    def d(self):return float(self.widD.text())
+    def d(self):return floatOrZero(self.widD.text())
     @d.setter
     def d(self, value): self.widD.setText(str(value))
 
     @property
-    def a(self):return float(self.widA.text())
+    def a(self):return floatOrZero(self.widA.text())
     @a.setter
     def a(self, value): self.widA.setText(str(value))
 
@@ -288,6 +287,13 @@ class CadWidget(QWidget):
             else:
                 lock.setChecked(True)
                 field.setText( str( v ) )
+
+def floatOrZero(value):
+    """
+    Since float("") throws an error, we need to use this
+    """
+    try: return float(value)
+    except: return 0.0
 
 class QLineEditWithShortcut(QLineEdit):
     """
