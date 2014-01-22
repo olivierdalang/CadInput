@@ -45,6 +45,7 @@ class GhostWidget(QWidget):
         self.setFocusPolicy(Qt.ClickFocus)
 
         self.suspendForPan = False
+        self.storeOtherSnapping = [] #holds the layer's snapping options when snapping is suspended (while constrained mouseEvents are sent to QgsMapCanvas)
 
         self.constructionsInc = 0
         self.segment = None
@@ -80,11 +81,11 @@ class GhostWidget(QWidget):
                 #we are wainting for segment input (parralel or perpendicular)
                 self.alignToSegment()
             else:
-                self.createSnappingPoint()
 
                 if self.cadwidget.c:
                     self.constructionsInc = min(self.constructionsInc+1, 2)
                 else:
+                    self.createSnappingPoint()
                     event = QMouseEvent( event.type(), self.toPixels(self.p2), event.button(), event.buttons(), event.modifiers() )                    
                     self.iface.mapCanvas().mousePressEvent(event)
                     self.constructionsInc = max(self.constructionsInc-1, 0)
@@ -101,31 +102,26 @@ class GhostWidget(QWidget):
 
         if event.button() == Qt.LeftButton and not self.suspendForPan and self._active():
 
-            QgsMessageLog.logMessage("a","CadInput")
             #CADINPUT is active
 
             if self.cadwidget.par or self.cadwidget.per:
-                QgsMessageLog.logMessage("b","CadInput")
                 #we are wainting for segment input (parralel or perpendicular)
                 if self.segment is not None:
                     self.cadwidget.par = False
                     self.cadwidget.per = False
             else:
-                QgsMessageLog.logMessage("c","CadInput")
                 if event.button() != Qt.MidButton:
                     self.cadwidget.unlockAll()
 
                 if self.cadwidget.c and self.segment is not None:
                     pass
                 else:
-                    QgsMessageLog.logMessage("d","CadInput")
                     event = QMouseEvent( event.type(), self.toPixels(self.p2), event.button(), event.buttons(), event.modifiers() )
+                    self.removeSnappingPoint()
                     self.iface.mapCanvas().mouseReleaseEvent(event)
 
-                self.removeSnappingPoint()
 
         else:
-            QgsMessageLog.logMessage("z","CadInput")
             #CADINPUT is inactive, simply forward event to mapCanvas
             if event.button() == Qt.MidButton:
                 self.suspendForPan = False
@@ -543,7 +539,7 @@ class GhostWidget(QWidget):
 
         #Draw constr
         painter.setPen( pConstruction )
-        if self.cadwidget.c or self.constructionsInc > 0:
+        if (not self.cadwidget.par or self.cadwidget.per) and (self.cadwidget.c or self.constructionsInc > 0):
             painter.drawLine(   self._tX( self.p2.x()),
                                 self._tY( self.p2.y()),
                                 self._tX( self.p3.x()),
