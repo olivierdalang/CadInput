@@ -62,13 +62,14 @@ class GhostWidget(QWidget):
         self.memoryLayer = None
 
     def _active(self):
-        return self.cadwidget.c or (self.iface.mapCanvas().mapTool() is not None and self.iface.mapCanvas().mapTool().isEditTool())
+        return (self.iface.mapCanvas().mapTool() is not None and self.iface.mapCanvas().mapTool().isEditTool())
 
     ###########################
     ##### INPUT EVENTS ########
     ###########################
 
     def mousePressEvent(self, event):
+        QgsMessageLog.logMessage("mousePressEvent","CadInput")
         if event.button() == Qt.LeftButton and not self.suspendForPan and self._active():
             #CADINPUT is active
 
@@ -99,26 +100,32 @@ class GhostWidget(QWidget):
     def mouseReleaseEvent(self, event):
 
         if event.button() == Qt.LeftButton and not self.suspendForPan and self._active():
+
+            QgsMessageLog.logMessage("a","CadInput")
             #CADINPUT is active
 
             if self.cadwidget.par or self.cadwidget.per:
+                QgsMessageLog.logMessage("b","CadInput")
                 #we are wainting for segment input (parralel or perpendicular)
                 if self.segment is not None:
                     self.cadwidget.par = False
                     self.cadwidget.per = False
             else:
+                QgsMessageLog.logMessage("c","CadInput")
                 if event.button() != Qt.MidButton:
                     self.cadwidget.unlockAll()
 
                 if self.cadwidget.c and self.segment is not None:
                     pass
                 else:
+                    QgsMessageLog.logMessage("d","CadInput")
                     event = QMouseEvent( event.type(), self.toPixels(self.p2), event.button(), event.buttons(), event.modifiers() )
                     self.iface.mapCanvas().mouseReleaseEvent(event)
 
                 self.removeSnappingPoint()
 
         else:
+            QgsMessageLog.logMessage("z","CadInput")
             #CADINPUT is inactive, simply forward event to mapCanvas
             if event.button() == Qt.MidButton:
                 self.suspendForPan = False
@@ -392,33 +399,44 @@ class GhostWidget(QWidget):
     def createSnappingPoint(self):
         """
         This method creates a point that will be snapped by the next click so that the point will be at model precision and not at screen precision.
+        It also disables all the other layer's snapping so they won't interfere. Those are reset in rmeoveSnapping point.
         """
-        if self.memoryLayer is None:
-            self.memoryLayer = QgsVectorLayer("point", "snap_points_for_cadinput", "memory")
-            QgsMapLayerRegistry.instance().addMapLayers([self.memoryLayer])
+        activeLayer = self.iface.activeLayer()
 
-        provider = self.memoryLayer.dataProvider()
+        #store and remove all the snapping options
+        self.storeOtherSnapping = dict()
+        for name in QgsMapLayerRegistry.instance().mapLayers():
+            layer = QgsMapLayerRegistry.instance().mapLayers()[name]
+            self.storeOtherSnapping[layer.id()] = QgsProject.instance().snapSettingsForLayer(layer.id())
+            QgsProject.instance().setSnapSettingsForLayer(layer.id(),False,0,0,0,False)
+
+
+        try:
+            provider = self.memoryLayer.dataProvider()
+        except (RuntimeError, AttributeError):
+            #RuntimeError : if the user removed the layer, the underlying c++ object will be deleted
+            #AttributeError : if self.memory is None
+            self.memoryLayer = QgsVectorLayer("point", "(cadinput_techical_snap_layer)", "memory")
+            QgsMapLayerRegistry.instance().addMapLayer(self.memoryLayer, False)
+            provider = self.memoryLayer.dataProvider()
+
+        QgsProject.instance().setSnapSettingsForLayer(self.memoryLayer.id(),  True, QgsSnapper.SnapToVertex , QgsTolerance.Pixels, 10.0, False )
 
         feature = QgsFeature()
         feature.setGeometry( QgsGeometry.fromPoint( self.p3 ) )
         provider.addFeatures([feature])
 
         self.memoryLayer.updateExtents()
+
+        self.iface.setActiveLayer(activeLayer)
+
     def removeSnappingPoint(self):
-        if self.memoryLayer is not None:
-
-            provider = self.memoryLayer.dataProvider()
-            features = provider.getFeatures( QgsFeatureRequest() )
-
-            for feature in features:
-                provider.deleteFeatures([feature.id()])
-
-            #QgsMapLayerRegistry.instance().removeMapLayer(self.memoryLayer.id())
+        #restore the snapping options
+        for layerId in self.storeOtherSnapping:
+            options = self.storeOtherSnapping[layerId]
+            QgsProject.instance().setSnapSettingsForLayer(layerId,options[1],options[2],options[3],options[4],options[5])
 
 
-            #In 2.2, this will be :
-            #provider = self.memoryLayer.dataProvider()
-            #provider.deleteFeatures( self.memoryLayer.allFeatureIds() )
 
 
 
@@ -430,11 +448,14 @@ class GhostWidget(QWidget):
     def _t(self, qgspoint):
         return self.iface.mapCanvas().getCoordinateTransform().transform(qgspoint)
     def _tX(self, x):
-        return self._t(QgsPoint(x,0)).x()
+        r = self._t(QgsPoint(x,0)).x()
+        return r
     def _tY(self, y):
-        return self._t(QgsPoint(0,y)).y()
+        r = self._t(QgsPoint(0,y)).y()
+        return r
     def _f(self, v):
-        return v/self.iface.mapCanvas().getCoordinateTransform().mapUnitsPerPixel()
+        r = v/self.iface.mapCanvas().getCoordinateTransform().mapUnitsPerPixel()
+        return r
 
     def paintEvent(self, paintEvent):
 
