@@ -162,13 +162,13 @@ class CadWidget(QWidget):
         self.lockD = QToolButton()
         self.lockD.setText("L")
         self.lockD.setCheckable(True)
-        self.lockD.setToolTip("Shift+D")
+        self.lockD.setToolTip("Alt+D or Ctrl+A")
 
         self.relA = QToolButton()
         self.relA.setText("D")
         self.relA.setCheckable(True)
         self.relA.setChecked(True)
-        self.relA.setToolTip("Alt+A")
+        self.relA.setToolTip("Shift+A")
 
         self.widA = QLineEditWithShortcut(self)
         self.widA.setToolTip("A")
@@ -176,7 +176,7 @@ class CadWidget(QWidget):
         self.lockA = QToolButton()
         self.lockA.setText("L")
         self.lockA.setCheckable(True)
-        self.lockA.setToolTip("Shift+A")
+        self.lockA.setToolTip("Alt+A or Ctrl+A")
 
         ## Cartesian
 
@@ -184,7 +184,7 @@ class CadWidget(QWidget):
         self.relX.setText("D")
         self.relX.setCheckable(True)
         self.relX.setChecked(True)
-        self.relX.setToolTip("Alt+X")
+        self.relX.setToolTip("Shift+X")
 
         self.widX = QLineEditWithShortcut(self)
         self.widX.setToolTip("X")
@@ -192,13 +192,13 @@ class CadWidget(QWidget):
         self.lockX = QToolButton()
         self.lockX.setText("L")
         self.lockX.setCheckable(True)
-        self.lockX.setToolTip("Shift+X")
+        self.lockX.setToolTip("Alt+X or Ctrl+A")
 
         self.relY = QToolButton()
         self.relY.setText("D")
         self.relY.setCheckable(True)
         self.relY.setChecked(True)
-        self.relY.setToolTip("Alt+Y")
+        self.relY.setToolTip("Shift+Y")
 
         self.widY = QLineEditWithShortcut(self)
         self.widY.setToolTip("Y")
@@ -206,7 +206,7 @@ class CadWidget(QWidget):
         self.lockY = QToolButton()
         self.lockY.setText("L")
         self.lockY.setCheckable(True)
-        self.lockY.setToolTip("Shift+Y")
+        self.lockY.setToolTip("Alt+Y or Ctrl+A")
 
 
 
@@ -295,7 +295,7 @@ class CadWidget(QWidget):
 
         event.accept()
         if event.key() == Qt.Key_X:
-            if event.modifiers() == Qt.AltModifier:
+            if event.modifiers() == Qt.AltModifier or event.modifiers() == Qt.ControlModifier:
                 self.lockX.toggle()
             elif event.modifiers() == Qt.ShiftModifier:
                 self.relX.toggle()
@@ -303,7 +303,7 @@ class CadWidget(QWidget):
                 self.widX.setFocus()
                 self.widX.selectAll()
         elif event.key() == Qt.Key_Y:
-            if event.modifiers() == Qt.AltModifier:
+            if event.modifiers() == Qt.AltModifier or event.modifiers() == Qt.ControlModifier:
                 self.lockY.toggle()
             elif event.modifiers() == Qt.ShiftModifier:
                 self.relY.toggle()
@@ -311,7 +311,7 @@ class CadWidget(QWidget):
                 self.widY.setFocus()
                 self.widY.selectAll()
         elif event.key() == Qt.Key_A:
-            if event.modifiers() == Qt.AltModifier:
+            if event.modifiers() == Qt.AltModifier or event.modifiers() == Qt.ControlModifier:
                 self.lockA.toggle()
             elif event.modifiers() == Qt.ShiftModifier:
                 self.relA.toggle()
@@ -319,7 +319,7 @@ class CadWidget(QWidget):
                 self.widA.setFocus()
                 self.widA.selectAll()
         elif event.key() == Qt.Key_D:
-            if event.modifiers() == Qt.AltModifier:
+            if event.modifiers() == Qt.AltModifier or event.modifiers() == Qt.ControlModifier:
                 self.lockD.toggle()
             else:
                 self.widD.setFocus()
