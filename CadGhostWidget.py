@@ -76,15 +76,15 @@ class GhostWidget(QWidget):
             self.p3 = self.manageP3(self.toMap( event.pos() ) )
 
             if self.cadwidget.par or self.cadwidget.per:
+                #we are wainting for segment input (parralel or perpendicular)
                 self.alignToSegment()
             else:
+                self.createSnappingPoint()
 
                 if self.cadwidget.c:
                     self.constructionsInc = min(self.constructionsInc+1, 2)
-
                 else:
-                    event = QMouseEvent( event.type(), self.toPixels(self.p2), event.button(), event.buttons(), event.modifiers() )
-                    self.createSnappingPoint()
+                    event = QMouseEvent( event.type(), self.toPixels(self.p2), event.button(), event.buttons(), event.modifiers() )                    
                     self.iface.mapCanvas().mousePressEvent(event)
                     self.constructionsInc = max(self.constructionsInc-1, 0)
 
@@ -102,6 +102,7 @@ class GhostWidget(QWidget):
             #CADINPUT is active
 
             if self.cadwidget.par or self.cadwidget.per:
+                #we are wainting for segment input (parralel or perpendicular)
                 if self.segment is not None:
                     self.cadwidget.par = False
                     self.cadwidget.per = False
@@ -114,7 +115,8 @@ class GhostWidget(QWidget):
                 else:
                     event = QMouseEvent( event.type(), self.toPixels(self.p2), event.button(), event.buttons(), event.modifiers() )
                     self.iface.mapCanvas().mouseReleaseEvent(event)
-                    self.removeSnappingPoint()
+
+                self.removeSnappingPoint()
 
         else:
             #CADINPUT is inactive, simply forward event to mapCanvas
@@ -130,6 +132,7 @@ class GhostWidget(QWidget):
             self.p3 = self.manageP3(self.toMap( event.pos() ))
 
             if self.cadwidget.par or self.cadwidget.per:
+                #we are wainting for segment input (parralel or perpendicular)
                 pass
             else:
 
@@ -334,15 +337,10 @@ class GhostWidget(QWidget):
 
         if snapped != []:
             snapResult = snapped[0]
-            if snapResult.beforeVertex is not None and snapResult.afterVertex is not None:
-                #the snap result is a segment !
-                pass
-            else:
-                #the snap result is a point !
-                # It seems to be necessary to create a new QgsPoint from the snapping result
-                return QgsPoint(snapResult.snappedVertex.x(),snapResult.snappedVertex.y())
+            return QgsPoint(snapped[0].snappedVertex.x(), snapped[0].snappedVertex.y())
 
         return self.iface.mapCanvas().getCoordinateTransform().toMapCoordinates( qpoint )
+    
     def toPixels(self, qgspoint):
         try:
             p = self.iface.mapCanvas().getCoordinateTransform().transform( qgspoint )
