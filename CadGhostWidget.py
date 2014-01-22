@@ -63,7 +63,7 @@ class GhostWidget(QWidget):
         self.memoryLayer = None
 
     def _active(self):
-        return (self.iface.mapCanvas().mapTool() is not None and self.iface.mapCanvas().mapTool().isEditTool())
+        return (self.cadwidget.act and self.iface.mapCanvas().mapTool() is not None and self.iface.mapCanvas().mapTool().isEditTool())
 
     ###########################
     ##### INPUT EVENTS ########

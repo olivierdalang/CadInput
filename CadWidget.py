@@ -103,6 +103,11 @@ class CadWidget(QWidget):
 
     #Misc properties
     @property
+    def act(self):return self.widAct.isChecked()
+    @act.setter
+    def act(self, value): self.widAct.setChecked(value)
+
+    @property
     def c(self): return self.widC.isChecked()
     @c.setter
     def c(self, value): self.widC.setChecked(value)
@@ -131,6 +136,11 @@ class CadWidget(QWidget):
         # Create the widgets
 
         ## General
+
+        self.widAct = QToolButton()
+        self.widAct.setText("active")
+        self.widAct.setCheckable(True)
+        #self.widC.setToolTip("C")
 
         self.widC = QToolButton()
         self.widC.setText("construction")
@@ -252,6 +262,7 @@ class CadWidget(QWidget):
 
         r=0
         sublayout = QHBoxLayout()
+        sublayout.addWidget(self.widAct)
         sublayout.addWidget(self.widC)
         sublayout.addWidget(self.widPar)
         sublayout.addWidget(self.widPer)
