@@ -122,17 +122,19 @@ body{font-size:16px;}
 }
 </style><title>README</title></head><body><h1 id="cadinput">CadInput</h1>
 <p>CadInput is an <em>EXPERIMENTAL</em> QGIS Python plugin that allows to numerically constrain the cursor to achieve efficient and precise digitizing, as possible in CAD packages, with any QGIS tool.</p>
-<p>It currently relies on several hacks and may therefore be unstable. <strong>DO NOT USE THIS IN PRODUCTION !!!</strong></p>
+<p>It currently relies on too many hacks and may therefore be unstable. <strong>DO NOT USE THIS IN PRODUCTION !!!</strong></p>
 <h2 id="toc">TOC</h2>
 <p><!-- MarkdownTOC -->
 - How to use
     - Editfields
     - Shortcuts
+- Known issues
 - Feedback / Bugs / Contribute
 - History
 - Technical notes
     - MapCanvas mouseEvents hack
     - Tools numeric input hack
+    - Background snapping on vertexes / segments only
     - What API improvements would avoid the need of those hacks ?
 <!-- /MarkdownTOC --></p>
 <h2 id="how-to-use">How to use</h2>
@@ -152,20 +154,22 @@ Setting a value to an empty string will unlock the value.</p>
 <li><em>C</em> : construction mode</li>
 <li><em>P</em> : parralel / perpendicular to a segment</li>
 </ul>
-<h2 id="feedback-bugs-contribute">Feedback / Bugs / Contribute</h2>
-<p>Feedback...</p>
-<h2 id="history">History</h2>
-<p>Written from scratch but based on the previous improvedpolygoncapturing plugin (which this aims to make obsolete) and inspired by ArchiCad's input system.</p>
+<h2 id="known-issues">Known issues</h2>
 <ul>
-<li>Version 0.1:<ul>
-<li>initial version</li>
+<li>Several (cadinput_technical_snap_layer) entries will flood the snap setting windows (one at each project load).</li>
+<li>A CRS Prompt will appear at first use of the tool if "use default CRS for new layers" is not set in the options.</li>
+<li>The snapping radius of the tool is hard coded to 20. The best is to set your radius to 20 too so it's more usable. </li>
+<li>...</li>
 </ul>
-</li>
-</ul>
+<h2 id="feedback-bugs-contribute">Feedback / Bugs / Contribute</h2>
+<p>...</p>
+<h2 id="history">History</h2>
+<p>...</p>
 <h2 id="technical-notes">Technical notes</h2>
 <p>The plugin relies on several hacks to work, since (afaik) the current QGIS API :
 - does not allow to hook into MapCanvas mouse events 
-- does not allow numerical input for tools in scene coordinates</p>
+- does not allow numerical input for tools in scene coordinates
+- does not allow to restrict background snapping on Vertexes or Segments only</p>
 <h3 id="mapcanvas-mouseevents-hack">MapCanvas mouseEvents hack</h3>
 <p>To be able to capture the mouseEvents of the MapCanvas, the plugin adds a QWidget as child of the mapCanvas.
 That QWidget will recieve all mouseEvents, process them (constraining cursor position), and finally send them to the mapCanvas.
@@ -173,6 +177,9 @@ A drawback is that there is a "double cursor", the native QGIS cursor, and a Cad
 <h3 id="tools-numeric-input-hack">Tools numeric input hack</h3>
 <p>Capture the mouseEvents is fine for graphical feedback, but does not allow for precise input (since mouseEvents are in pixels, and not in map units).
 To workaround this limitation, the plugin creates a memory layer, in which a point is created each time a precise coordinate input is needed, to which the native tools will snap.</p>
+<h3 id="background-snapping-on-vertexes-segments-only">Background snapping on vertexes / segments only</h3>
+<p>To achieve that result, the plugin iterates through all layers, disables their snapping, performs the snappings, and restores the snapping afterwards.
+Signals are blocked during that, so that the UI is not refreshed.</p>
 <h3 id="what-api-improvements-would-avoid-the-need-of-those-hacks">What API improvements would avoid the need of those hacks ?</h3>
 <ul>
 <li><strong>Have QgsMapCanvas emit signals on mouseEvents </strong></li>
@@ -184,4 +191,11 @@ To workaround this limitation, the plugin creates a memory layer, in which a poi
 <p>For instance by adding <code>void QgsMapTool::scenePressEvent( QMouseEvent *e, QgsPoint *p )</code> (and the same for move and release events).</p>
 <p>Or by adding an optional <code>scenePos *pos=0</code> parameter to the existing <code>void QgsMapTool::canvasPressEvent( QMouseEvent *e )</code>
 This could anyways be very useful for different uses (automation ?).</p>
-<p>The problem is, it seems the snapping/coordinate translation is implemented by each Tool subclass... So it will be some work !</p></body></html>
+<p>The problem is, it seems the snapping/coordinate translation is implemented by each Tool subclass... So it will be some work !</p>
+<ul>
+<li>**Allow to restrict snapping for background layers, just as there is for the active layer</li>
+</ul>
+<p>Modify QgsMapCanvasSnapper's snapToBackgroundLayers method to work like snapToCurrentLayer.
+<code>int snapToBackgroundLayers( const QPoint&amp; p, QList&lt;QgsSnappingResult&gt;&amp; results, const QList&lt;QgsPoint&gt;&amp; excludePoints = QList&lt;QgsPoint&gt;() );</code> would become 
+<code>int snapToBackgroundLayers( const QPoint&amp; p, QList&lt;QgsSnappingResult&gt;&amp; results, QgsSnapper::SnappingType snap_to, double snappingTol = -1, const QList&lt;QgsPoint&gt;&amp; excludePoints = QList&lt;QgsPoint&gt;() );</code></p>
+<p>Alternatively, QgsSnappingResult could have a field informing wheter it was a vertex or a segment snap.</p></body></html>
