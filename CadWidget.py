@@ -130,8 +130,6 @@ class CadWidget(QWidget):
         # We want to get focus so KeyPressEvents can be processed (useful for internal shortcuts)
         self.setFocusPolicy(Qt.ClickFocus)
 
-        gridLayout = QGridLayout() 
-
 
         # Create the widgets
 
@@ -259,6 +257,7 @@ class CadWidget(QWidget):
 
 
         # Layout the widgets
+        gridLayout = QGridLayout() 
 
         r=0
         sublayout = QHBoxLayout()
@@ -292,10 +291,8 @@ class CadWidget(QWidget):
         gridLayout.addWidget(self.widY,r,2 )
         gridLayout.addWidget(self.lockY,r,3 )
 
-        r+=1
-        self.click = QPushButton()
-        self.click.setText("click")
-        gridLayout.addWidget(self.click,r,0,1,4 )
+        gridLayout.setRowStretch( r, 1 ) #does not work ?!
+        gridLayout.setColumnStretch( 2, 1 )
 
         self.setLayout(gridLayout)
     

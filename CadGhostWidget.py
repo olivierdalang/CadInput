@@ -81,17 +81,17 @@ class GhostWidget(QWidget):
                 #we are wainting for segment input (parralel or perpendicular)
                 self.alignToSegment()
             else:
+                self.createSnappingPoint()
 
                 if self.cadwidget.c:
                     self.constructionsInc = min(self.constructionsInc+1, 2)
                 else:
-                    self.createSnappingPoint()
-                    event = QMouseEvent( event.type(), self.toPixels(self.p2), event.button(), event.buttons(), event.modifiers() )                    
+                    event = QMouseEvent( event.type(), self.toPixels(self.p3), event.button(), event.buttons(), event.modifiers() )                    
                     self.iface.mapCanvas().mousePressEvent(event)
                     self.constructionsInc = max(self.constructionsInc-1, 0)
 
-                self.p1 = self.p2
-                self.p2 = self.p3
+                self.removeSnappingPoint()
+
 
         else:
             #CADINPUT is inactive, simply forward event to mapCanvas
@@ -104,6 +104,9 @@ class GhostWidget(QWidget):
 
             #CADINPUT is active
 
+            self.segment = self.toSegment( event.pos() )
+            self.p3 = self.manageP3(self.toMap( event.pos() ) )
+
             if self.cadwidget.par or self.cadwidget.per:
                 #we are wainting for segment input (parralel or perpendicular)
                 if self.segment is not None:
@@ -113,12 +116,18 @@ class GhostWidget(QWidget):
                 if event.button() != Qt.MidButton:
                     self.cadwidget.unlockAll()
 
+                self.createSnappingPoint()
+
                 if self.cadwidget.c and self.segment is not None:
                     pass
                 else:
-                    event = QMouseEvent( event.type(), self.toPixels(self.p2), event.button(), event.buttons(), event.modifiers() )
-                    self.removeSnappingPoint()
+                    event = QMouseEvent( event.type(), self.toPixels(self.p3), event.button(), event.buttons(), event.modifiers() )
                     self.iface.mapCanvas().mouseReleaseEvent(event)
+
+                self.removeSnappingPoint()
+
+                self.p1 = self.p2
+                self.p2 = self.p3
 
 
         else:
