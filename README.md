@@ -1,18 +1,18 @@
 # CadInput
 
 
-CadInput is an _EXPERIMENTAL_ [QGIS](http://www.qgis.org) [Python](http://www.python.org) plugin that allows to numerically constrain the cursor to achieve efficient and precise digitizing, as possible in CAD packages, with any QGIS tool.
+CadInput is an _EXPERIMENTAL_ QGIS Python plugin that allows to numerically constrain the cursor to achieve efficient and precise digitizing, as possible in CAD packages, with any QGIS tool.
 
-It currently relies on several hacks and may therefore be unstable.
+It currently relies on several hacks and may therefore be unstable. **DO NOT USE THIS IN PRODUCTION !!!**
 
-**DO NOT USE THIS IN PRODUCTION !!!**
-
+## TOC
 <!-- MarkdownTOC -->
 - How to use
     - Editfields
     - Shortcuts
+- Issues
 - Feedback / Bugs / Contribute
-- Changelog
+- History
 - Technical notes
     - MapCanvas mouseEvents hack
     - Tools numeric input hack
@@ -39,23 +39,27 @@ Shortcuts are accessible if the MapCanvas or the CadInputWidget have focus :
 - *X* : x coordinate
 - *Y* : y coordinate
 - Combine those with "shift" to toggle absolute/relative mode
-- Combine those with "alt" to toggle locked mode.
+- Combine those with "alt" or "ctrl" to toggle locked mode.
 - *C* : construction mode
 - *P* : parralel / perpendicular to a segment
 
+## Issues
+
+Impossible to use with 
+
 ## Feedback / Bugs / Contribute
 
-Feedback...
+...
 
-## Changelog
+## History
 
-Changelog...
+...
 
 ## Technical notes
 
 The plugin relies on several hacks to work, since (afaik) the current QGIS API :
 - does not allow to hook into MapCanvas mouse events 
-- does not allow numerical input for tools
+- does not allow numerical input for tools in scene coordinates
 
 ### MapCanvas mouseEvents hack
 
