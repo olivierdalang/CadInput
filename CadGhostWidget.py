@@ -46,6 +46,7 @@ class GhostWidget(QWidget):
 
         self.suspendForPan = False
         self.storeOtherSnapping = [] #holds the layer's snapping options when snapping is suspended (while constrained mouseEvents are sent to QgsMapCanvas)
+        self.backgroundSnappingDisabled = False
 
         self.constructionsInc = 0
         self.segment = None
@@ -362,11 +363,13 @@ class GhostWidget(QWidget):
             return QPoint()
 
     def toSegment(self, qpoint):
-        snapper = QgsMapCanvasSnapper(self.iface.mapCanvas())
 
+        self.backgroundSnappingToSegmentSnappingOnly()
+        snapper = QgsMapCanvasSnapper(self.iface.mapCanvas())
         (reval, snapped) = snapper.snapToCurrentLayer(qpoint,QgsSnapper.SnapToSegment)
         if snapped == []:
             (reval, snapped) = snapper.snapToBackgroundLayers(qpoint)
+        self.restoreBackgroundSnapping()
 
         if snapped != []:
             snapResult = snapped[0]
@@ -409,12 +412,7 @@ class GhostWidget(QWidget):
         activeLayer = self.iface.activeLayer()
 
         #store and remove all the snapping options
-        self.storeOtherSnapping = dict()
-        for name in QgsMapLayerRegistry.instance().mapLayers():
-            layer = QgsMapLayerRegistry.instance().mapLayers()[name]
-            self.storeOtherSnapping[layer.id()] = QgsProject.instance().snapSettingsForLayer(layer.id())
-            QgsProject.instance().setSnapSettingsForLayer(layer.id(),False,0,0,0,False)
-
+        self.disableBackgroundSnapping()
 
         try:
             provider = self.memoryLayer.dataProvider()
@@ -436,13 +434,74 @@ class GhostWidget(QWidget):
         self.iface.setActiveLayer(activeLayer)
 
     def removeSnappingPoint(self):
+
+        #empty the layer
+        provider = self.memoryLayer.dataProvider()
+        features = provider.getFeatures( QgsFeatureRequest() )
+
+        for feature in features:
+            provider.deleteFeatures([feature.id()])
+
+        #In 2.2, this will be  (untested):
+        #provider = self.memoryLayer.dataProvider()
+        #provider.deleteFeatures( self.memoryLayer.allFeatureIds() )
+
+
         #restore the snapping options
+        self.restoreBackgroundSnapping()
+
+
+
+    def disableBackgroundSnapping(self):
+        """
+        Stores (for latter restoring) and then remove all the snapping options.
+        """
+        #s
+
+        QgsProject.instance().blockSignals(True) #we don't want to refresh the snapping UI
+
+        if self.backgroundSnappingDisabled:
+            QgsMessageLog.logMessage("WARNING : restoreBackgroundSnapping was not called before disableBackgroundSnapping !")
+
+        self.backgroundSnappingDisabled = True
+        self.storeOtherSnapping = dict()
+        for name in QgsMapLayerRegistry.instance().mapLayers():
+            layer = QgsMapLayerRegistry.instance().mapLayers()[name]
+            self.storeOtherSnapping[layer.id()] = QgsProject.instance().snapSettingsForLayer(layer.id())
+            QgsProject.instance().setSnapSettingsForLayer(layer.id(),False,0,0,0,False)
+
+        QgsProject.instance().blockSignals(False) #we don't want to refresh the snapping UI
+
+    def backgroundSnappingToSegmentSnappingOnly(self):
+        """
+        Stores (for latter restoring) and then modifies all the snapping options to snap to segments.
+        """
+
+        QgsProject.instance().blockSignals(True) #we don't want to refresh the snapping UI
+
+        if self.backgroundSnappingDisabled:
+            QgsMessageLog.logMessage("WARNING : restoreBackgroundSnapping was not called before backgroundSnappingToSegmentSnappingOnly !")
+
+        self.backgroundSnappingDisabled = True
+        self.storeOtherSnapping = dict()
+        for name in QgsMapLayerRegistry.instance().mapLayers():
+            layer = QgsMapLayerRegistry.instance().mapLayers()[name]
+            self.storeOtherSnapping[layer.id()] = QgsProject.instance().snapSettingsForLayer(layer.id())
+            QgsProject.instance().setSnapSettingsForLayer(layer.id(),True,QgsSnapper.SnapToSegment ,QgsTolerance.Pixels,10,False)
+
+        QgsProject.instance().blockSignals(False) #we don't want to refresh the snapping UI
+
+    def restoreBackgroundSnapping(self):
+
+        QgsProject.instance().blockSignals(True) #we don't want to refresh the snapping UI
+
         for layerId in self.storeOtherSnapping:
             options = self.storeOtherSnapping[layerId]
             QgsProject.instance().setSnapSettingsForLayer(layerId,options[1],options[2],options[3],options[4],options[5])
 
+        self.backgroundSnappingDisabled = False
 
-
+        QgsProject.instance().blockSignals(False) #we don't want to refresh the snapping UI
 
 
 
