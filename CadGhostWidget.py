@@ -75,11 +75,8 @@ class GhostWidget(QWidget):
         if event.button() == Qt.LeftButton and not self.suspendForPan and self._active():
             #CADINPUT is active
 
-            (p3,snapped) = self.toMap( event.pos() )
-            if not snapped:
-                self.segment = self.toSegment( event.pos() )
-            else:
-                self.segment = None
+            (p3, segment) = self.toMap( event.pos() )
+            self.segment = segment
             self.p3 = self.manageP3( p3 )
 
             if self.cadwidget.par or self.cadwidget.per:
@@ -109,11 +106,8 @@ class GhostWidget(QWidget):
 
             #CADINPUT is active
 
-            (p3,snapped) = self.toMap( event.pos() )
-            if not snapped:
-                self.segment = self.toSegment( event.pos() )
-            else:
-                self.segment = None
+            (p3, segment) = self.toMap( event.pos() )
+            self.segment = segment
             self.p3 = self.manageP3( p3 )
 
             if self.cadwidget.par or self.cadwidget.per:
@@ -149,11 +143,8 @@ class GhostWidget(QWidget):
         if not self.suspendForPan and self._active():
             #CADINPUT is active
 
-            (p3,snapped) = self.toMap( event.pos() )
-            if not snapped:
-                self.segment = self.toSegment( event.pos() )
-            else:
-                self.segment = None
+            (p3, segment) = self.toMap( event.pos() )
+            self.segment = segment
             self.p3 = self.manageP3( p3 )
 
             if self.cadwidget.par or self.cadwidget.per:
@@ -354,20 +345,54 @@ class GhostWidget(QWidget):
 
         return p3
     def toMap(self, qpoint):
+        """
+        We will :
+        1) check if this snaps on a point of the current layer, if not :
+        2) check if this snaps on a point of a background layer, if not :
+        3) check if this snaps on a segment of the current layer, if not :
+        4) check if this snaps on a segment of the background layer
+
+        if 1 or 2) we, snap to that point, and set the segment to None
+        if 3 or 4) we, we snap to that segment, and set the segment for advanced snap (if another constraint is set)
+
+        if none, we simply map the point to the scene
+        """
+
+        #1) Snap on current layer vertex
         snapper = QgsMapCanvasSnapper(self.iface.mapCanvas())
-
         (reval, snapped) = snapper.snapToCurrentLayer(qpoint,QgsSnapper.SnapToVertex)
-        
-        #DISABLED SINCE WE CAN'T SNAP VERTEXES ONLY IN BACKGROUND VECTORS
-        #if snapped == []:
-        #    (reval, snapped) = snapper.snapToBackgroundLayers(qpoint)
-
         if snapped != []:
-            snapResult = snapped[0]
-            #unfortunately, at this point, now way to know if it is a vertex or a segment in case we snapped a background layer
-            return (QgsPoint(snapped[0].snappedVertex.x(), snapped[0].snappedVertex.y()) , True)
+            point = QgsPoint(snapped[0].snappedVertex.x(), snapped[0].snappedVertex.y())
+            return (point, None)
 
-        return (self.iface.mapCanvas().getCoordinateTransform().toMapCoordinates( qpoint ) , False)
+        #2) Snap on background vertex
+        self.disableBackgroundSnapping('vertex')        
+        (reval, snapped) = snapper.snapToBackgroundLayers(qpoint)
+        self.restoreBackgroundSnapping()
+        if snapped != []:
+            point = QgsPoint(snapped[0].snappedVertex.x(), snapped[0].snappedVertex.y())
+            return (point, None)
+
+        #3) Snap on current layer segments
+        snapper = QgsMapCanvasSnapper(self.iface.mapCanvas())
+        (reval, snapped) = snapper.snapToCurrentLayer(qpoint,QgsSnapper.SnapToSegment)
+        if snapped != []:
+            point = QgsPoint(snapped[0].snappedVertex.x(), snapped[0].snappedVertex.y())
+            prevPoint = snapped[0].beforeVertex
+            afterPoint = snapped[0].afterVertex
+            return (point, (prevPoint,afterPoint))
+
+        #4) Snap on background segments
+        self.disableBackgroundSnapping('segment')        
+        (reval, snapped) = snapper.snapToBackgroundLayers(qpoint)
+        self.restoreBackgroundSnapping()
+        if snapped != []:
+            point = QgsPoint(snapped[0].snappedVertex.x(), snapped[0].snappedVertex.y())
+            prevPoint = snapped[0].beforeVertex
+            afterPoint = snapped[0].afterVertex
+            return (point, (prevPoint,afterPoint))
+
+        return (self.iface.mapCanvas().getCoordinateTransform().toMapCoordinates( qpoint ), None)
     
     def toPixels(self, qgspoint):
         try:
@@ -465,11 +490,10 @@ class GhostWidget(QWidget):
 
 
 
-    def disableBackgroundSnapping(self):
+    def disableBackgroundSnapping(self, keepSnapping=None):
         """
         Stores (for latter restoring) and then remove all the snapping options.
         """
-        #s
 
         QgsProject.instance().blockSignals(True) #we don't want to refresh the snapping UI
 
@@ -481,28 +505,16 @@ class GhostWidget(QWidget):
         for name in QgsMapLayerRegistry.instance().mapLayers():
             layer = QgsMapLayerRegistry.instance().mapLayers()[name]
             self.storeOtherSnapping[layer.id()] = QgsProject.instance().snapSettingsForLayer(layer.id())
-            QgsProject.instance().setSnapSettingsForLayer(layer.id(),False,0,0,0,False)
+
+            if keepSnapping=='vertex':
+                QgsProject.instance().setSnapSettingsForLayer(layer.id(),True,QgsSnapper.SnapToVertex ,20,False)
+            elif keepSnapping=='segment':
+                QgsProject.instance().setSnapSettingsForLayer(layer.id(),True,QgsSnapper.SnapToSegment ,20,False)
+            else:
+                QgsProject.instance().setSnapSettingsForLayer(layer.id(),False,0,0,0,False)
 
         QgsProject.instance().blockSignals(False) #we don't want to refresh the snapping UI
 
-    def backgroundSnappingToSegmentSnappingOnly(self):
-        """
-        Stores (for latter restoring) and then modifies all the snapping options to snap to segments.
-        """
-
-        QgsProject.instance().blockSignals(True) #we don't want to refresh the snapping UI
-
-        if self.backgroundSnappingDisabled:
-            QgsMessageLog.logMessage("WARNING : restoreBackgroundSnapping was not called before backgroundSnappingToSegmentSnappingOnly !")
-
-        self.backgroundSnappingDisabled = True
-        self.storeOtherSnapping = dict()
-        for name in QgsMapLayerRegistry.instance().mapLayers():
-            layer = QgsMapLayerRegistry.instance().mapLayers()[name]
-            self.storeOtherSnapping[layer.id()] = QgsProject.instance().snapSettingsForLayer(layer.id())
-            QgsProject.instance().setSnapSettingsForLayer(layer.id(),True,QgsSnapper.SnapToSegment ,QgsTolerance.Pixels,10,False)
-
-        QgsProject.instance().blockSignals(False) #we don't want to refresh the snapping UI
 
     def restoreBackgroundSnapping(self):
 
@@ -515,6 +527,7 @@ class GhostWidget(QWidget):
         self.backgroundSnappingDisabled = False
 
         QgsProject.instance().blockSignals(False) #we don't want to refresh the snapping UI
+
 
 
 
