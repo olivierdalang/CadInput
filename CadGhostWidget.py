@@ -75,8 +75,12 @@ class GhostWidget(QWidget):
         if event.button() == Qt.LeftButton and not self.suspendForPan and self._active():
             #CADINPUT is active
 
-            self.segment = self.toSegment( event.pos() )
-            self.p3 = self.manageP3(self.toMap( event.pos() ) )
+            (p3,snapped) = self.toMap( event.pos() )
+            if not snapped:
+                self.segment = self.toSegment( event.pos() )
+            else:
+                self.segment = None
+            self.p3 = self.manageP3( p3 )
 
             if self.cadwidget.par or self.cadwidget.per:
                 #we are wainting for segment input (parralel or perpendicular)
@@ -105,8 +109,12 @@ class GhostWidget(QWidget):
 
             #CADINPUT is active
 
-            self.segment = self.toSegment( event.pos() )
-            self.p3 = self.manageP3(self.toMap( event.pos() ) )
+            (p3,snapped) = self.toMap( event.pos() )
+            if not snapped:
+                self.segment = self.toSegment( event.pos() )
+            else:
+                self.segment = None
+            self.p3 = self.manageP3( p3 )
 
             if self.cadwidget.par or self.cadwidget.per:
                 #we are wainting for segment input (parralel or perpendicular)
@@ -141,8 +149,12 @@ class GhostWidget(QWidget):
         if not self.suspendForPan and self._active():
             #CADINPUT is active
 
-            self.segment = self.toSegment( event.pos() )
-            self.p3 = self.manageP3(self.toMap( event.pos() ))
+            (p3,snapped) = self.toMap( event.pos() )
+            if not snapped:
+                self.segment = self.toSegment( event.pos() )
+            else:
+                self.segment = None
+            self.p3 = self.manageP3( p3 )
 
             if self.cadwidget.par or self.cadwidget.per:
                 #we are wainting for segment input (parralel or perpendicular)
@@ -344,15 +356,18 @@ class GhostWidget(QWidget):
     def toMap(self, qpoint):
         snapper = QgsMapCanvasSnapper(self.iface.mapCanvas())
 
-        (reval, snapped) = snapper.snapToCurrentLayer(qpoint,QgsSnapper.SnapToVertexAndSegment)
-        if snapped == []:
-            (reval, snapped) = snapper.snapToBackgroundLayers(qpoint)
+        (reval, snapped) = snapper.snapToCurrentLayer(qpoint,QgsSnapper.SnapToVertex)
+        
+        #DISABLED SINCE WE CAN'T SNAP VERTEXES ONLY IN BACKGROUND VECTORS
+        #if snapped == []:
+        #    (reval, snapped) = snapper.snapToBackgroundLayers(qpoint)
 
         if snapped != []:
             snapResult = snapped[0]
-            return QgsPoint(snapped[0].snappedVertex.x(), snapped[0].snappedVertex.y())
+            #unfortunately, at this point, now way to know if it is a vertex or a segment in case we snapped a background layer
+            return (QgsPoint(snapped[0].snappedVertex.x(), snapped[0].snappedVertex.y()) , True)
 
-        return self.iface.mapCanvas().getCoordinateTransform().toMapCoordinates( qpoint )
+        return (self.iface.mapCanvas().getCoordinateTransform().toMapCoordinates( qpoint ) , False)
     
     def toPixels(self, qgspoint):
         try:
@@ -367,20 +382,16 @@ class GhostWidget(QWidget):
         self.backgroundSnappingToSegmentSnappingOnly()
         snapper = QgsMapCanvasSnapper(self.iface.mapCanvas())
         (reval, snapped) = snapper.snapToCurrentLayer(qpoint,QgsSnapper.SnapToSegment)
+
+        #DISABLED SINCE WE CAN'T SNAP SEGMENTS ONLY IN BACKGROUND VECTORS
         if snapped == []:
             (reval, snapped) = snapper.snapToBackgroundLayers(qpoint)
         self.restoreBackgroundSnapping()
 
         if snapped != []:
             snapResult = snapped[0]
-            if snapResult.beforeVertex is not None and snapResult.afterVertex is not None:
-                #QgsMessageLog.logMessage("Segment seeked and found !","CadInput")
-                #the snap result is a segment !
-                return ( snapResult.beforeVertex, snapResult.afterVertex )
-            else:
-                #QgsMessageLog.logMessage("Segment seeked but point found :(","CadInput")
-                #the snap result is a point !
-                pass
+            #unfortunately, at this point, now way to know if it is a vertex or a segment in case we snapped a background layer
+            return ( snapResult.beforeVertex, snapResult.afterVertex )
         else:
             #QgsMessageLog.logMessage("Segment seeked but nothgin found :(","CadInput")
             pass
@@ -423,7 +434,9 @@ class GhostWidget(QWidget):
             QgsMapLayerRegistry.instance().addMapLayer(self.memoryLayer, False)
             provider = self.memoryLayer.dataProvider()
 
+        QgsProject.instance().blockSignals(True) #we don't want to refresh the snapping UI
         QgsProject.instance().setSnapSettingsForLayer(self.memoryLayer.id(),  True, QgsSnapper.SnapToVertex , QgsTolerance.Pixels, 10.0, False )
+        QgsProject.instance().blockSignals(False) #we don't want to refresh the snapping UI
 
         feature = QgsFeature()
         feature.setGeometry( QgsGeometry.fromPoint( self.p3 ) )
