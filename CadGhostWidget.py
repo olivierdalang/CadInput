@@ -278,7 +278,10 @@ class GhostWidget(QWidget):
                 l2 = QLineF(self.segment[0].x(), self.segment[0].y(), self.segment[1].x() ,self.segment[1].y())
 
                 intP = QPointF()
-                if l1.intersect(l2, intP) == QLineF.UnboundedIntersection:
+                ang = l1.angleTo(l2)
+                t = 0.0001
+                # TODO : this may cause some accuracy problem ?
+                if l1.intersect(l2, intP) == QLineF.UnboundedIntersection and not (ang < t or ang > 360-t or (ang > 180-t and ang < 180+t) ):
                     p3.setX( intP.x() )
                     p3.setY( intP.y() )
 
