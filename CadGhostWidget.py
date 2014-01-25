@@ -124,7 +124,7 @@ class GhostWidget(QWidget):
 
                 self.createSnappingPoint()
 
-                if self.cadwidget.c and self.segment is not None:
+                if self.cadwidget.c:
                     pass
                 else:
                     event = QMouseEvent( event.type(), self.toPixels(self.p3), event.button(), event.buttons(), event.modifiers() )
