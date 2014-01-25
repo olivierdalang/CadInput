@@ -401,6 +401,9 @@ class GhostWidget(QWidget):
         return (self.iface.mapCanvas().getCoordinateTransform().toMapCoordinates( qpoint ), None)
     
     def toPixels(self, qgspoint):
+        """
+        Given a point in project's coordinates, returns a point in screen (pixel) coordinates
+        """
         try:
             p = self.iface.mapCanvas().getCoordinateTransform().transform( qgspoint )
             return QPoint( int(p.x()), int(p.y()) )
@@ -411,6 +414,9 @@ class GhostWidget(QWidget):
 
 
     def alignToSegment(self):
+        """
+        Set's the CadWidget's angle value to be parrelel to self.segment's angle
+        """
 
         if self.segment is not None:
 
@@ -464,6 +470,10 @@ class GhostWidget(QWidget):
         self.iface.setActiveLayer(activeLayer)
 
     def removeSnappingPoint(self):
+        """
+        This methods empties the snapping layer.
+        It must be called after createSnappingPoint (once the snapping has been done), since it also reenables the other layer's snapping
+        """
 
         #empty the layer
         provider = self.memoryLayer.dataProvider()
@@ -509,6 +519,9 @@ class GhostWidget(QWidget):
 
 
     def restoreBackgroundSnapping(self):
+        """
+        Restores previously stored snapping options
+        """
 
         QgsProject.instance().blockSignals(True) #we don't want to refresh the snapping UI
 
@@ -522,6 +535,9 @@ class GhostWidget(QWidget):
 
 
     def cleanLayers(self, layernameToClean):
+        """
+        Cleans the old memory layers (all layer having layernameToClean for name) to avoid proliferation of unused memory layers.
+        """
 
         # Clean the old memory layers
         for name in QgsMapLayerRegistry.instance().mapLayers():
@@ -546,6 +562,9 @@ class GhostWidget(QWidget):
         return r
 
     def paintEvent(self, paintEvent):
+        """
+        Paints the visual feedback (painting is done in screen coordinates).
+        """
 
         if math.isnan( self._tX(0) ) or not self._active():
             #on loading QGIS, it seems QgsMapToPixel is not ready and return NaNs...
