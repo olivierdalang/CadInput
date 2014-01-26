@@ -121,7 +121,7 @@ body{font-size:16px;}
   h2, h3 { page-break-after: avoid; }
 }
 </style><title>README</title></head><body><h1 id="cadinput">CadInput</h1>
-<p>CadInput is an <em>EXPERIMENTAL</em> QGIS Python plugin that allows to numerically constrain the cursor to achieve efficient and precise digitizing, as possible in CAD packages, with any QGIS tool.</p>
+<p>CadInput is a <strong>PROTOTYPE</strong> QGIS Python plugin that allows to numerically constrain the cursor to achieve efficient and precise digitizing, as possible in CAD packages, with any QGIS tool.</p>
 <p>It currently relies on too many hacks and may therefore be unstable. <strong>DO NOT USE THIS IN PRODUCTION !!!</strong></p>
 <h2 id="toc">TOC</h2>
 <p><!-- MarkdownTOC -->
@@ -136,6 +136,7 @@ body{font-size:16px;}
     - Tools numeric input hack
     - Background snapping on vertexes / segments only
     - What API improvements would avoid the need of those hacks ?
+    - What other QGIS improvement woud make the plugin work better
 <!-- /MarkdownTOC --></p>
 <h2 id="how-to-use">How to use</h2>
 <h3 id="editfields">Editfields</h3>
@@ -193,9 +194,14 @@ Signals are blocked during that, so that the UI is not refreshed.</p>
 This could anyways be very useful for different uses (automation ?).</p>
 <p>The problem is, it seems the snapping/coordinate translation is implemented by each Tool subclass... So it will be some work !</p>
 <ul>
-<li>**Allow to restrict snapping for background layers, just as there is for the active layer</li>
+<li><strong>Allow to restrict snapping for background layers, just as there is for the active layer</strong></li>
 </ul>
 <p>Modify QgsMapCanvasSnapper's snapToBackgroundLayers method to work like snapToCurrentLayer.
 <code>int snapToBackgroundLayers( const QPoint&amp; p, QList&lt;QgsSnappingResult&gt;&amp; results, const QList&lt;QgsPoint&gt;&amp; excludePoints = QList&lt;QgsPoint&gt;() );</code> would become 
 <code>int snapToBackgroundLayers( const QPoint&amp; p, QList&lt;QgsSnappingResult&gt;&amp; results, QgsSnapper::SnappingType snap_to, double snappingTol = -1, const QList&lt;QgsPoint&gt;&amp; excludePoints = QList&lt;QgsPoint&gt;() );</code></p>
-<p>Alternatively, QgsSnappingResult could have a field informing wheter it was a vertex or a segment snap.</p></body></html>
+<p>Alternatively, QgsSnappingResult could have a field informing wheter it was a vertex or a segment snap.</p>
+<h3 id="what-other-qgis-improvement-woud-make-the-plugin-work-better">What other QGIS improvement woud make the plugin work better</h3>
+<ul>
+<li><strong>Click-drag tools should allow click-move-click input method</strong></li>
+</ul>
+<p>Some tools work in click-click mode (add feature...), but some other in click-drag mode (move vertex, ...). That second method is less common in CAD softwares, since it is less practical. Those click-drag tools work currently with the plugin, but the user must keep the mouse pressed, which is a bit annoying. Allowing click-move-click mode for those tool as well would be an improvement.</p></body></html>

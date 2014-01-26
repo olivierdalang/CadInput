@@ -1,7 +1,7 @@
 # CadInput
 
 
-CadInput is an _EXPERIMENTAL_ QGIS Python plugin that allows to numerically constrain the cursor to achieve efficient and precise digitizing, as possible in CAD packages, with any QGIS tool.
+CadInput is a __PROTOTYPE__ QGIS Python plugin that allows to numerically constrain the cursor to achieve efficient and precise digitizing, as possible in CAD packages, with any QGIS tool.
 
 It currently relies on too many hacks and may therefore be unstable. **DO NOT USE THIS IN PRODUCTION !!!**
 
@@ -18,6 +18,7 @@ It currently relies on too many hacks and may therefore be unstable. **DO NOT US
     - Tools numeric input hack
     - Background snapping on vertexes / segments only
     - What API improvements would avoid the need of those hacks ?
+    - What other QGIS improvement woud make the plugin work better
 <!-- /MarkdownTOC -->
 
 
@@ -97,12 +98,18 @@ This could anyways be very useful for different uses (automation ?).
 
 The problem is, it seems the snapping/coordinate translation is implemented by each Tool subclass... So it will be some work !
 
-- **Allow to restrict snapping for background layers, just as there is for the active layer
+- **Allow to restrict snapping for background layers, just as there is for the active layer**
 
 Modify QgsMapCanvasSnapper's snapToBackgroundLayers method to work like snapToCurrentLayer.
 `int snapToBackgroundLayers( const QPoint& p, QList<QgsSnappingResult>& results, const QList<QgsPoint>& excludePoints = QList<QgsPoint>() );` would become 
 `int snapToBackgroundLayers( const QPoint& p, QList<QgsSnappingResult>& results, QgsSnapper::SnappingType snap_to, double snappingTol = -1, const QList<QgsPoint>& excludePoints = QList<QgsPoint>() );`
 
 Alternatively, QgsSnappingResult could have a field informing wheter it was a vertex or a segment snap.
+
+### What other QGIS improvement woud make the plugin work better
+
+- **Click-drag tools should allow click-move-click input method**
+
+Some tools work in click-click mode (add feature...), but some other in click-drag mode (move vertex, ...). That second method is less common in CAD softwares, since it is less practical. Those click-drag tools work currently with the plugin, but the user must keep the mouse pressed, which is a bit annoying. Allowing click-move-click mode for those tool as well would be an improvement.
     
 
