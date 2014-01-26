@@ -133,6 +133,12 @@ class CadWidget(QWidget):
 
         # Create the widgets
 
+        ## Load the images
+        lockPixmap = QPixmap(":/plugins/cadinput/ressources/lock.png")
+        lockIcon = QIcon( lockPixmap )
+        deltaPixmap = QPixmap(":/plugins/cadinput/ressources/delta.png")
+        deltaIcon = QIcon(  deltaPixmap )
+
         ## General
 
         self.widAct = QToolButton()
@@ -157,23 +163,26 @@ class CadWidget(QWidget):
 
         ## Angular
 
-        self.relD = QToolButton()
-        self.relD.setText("D")
-        self.relD.setCheckable(True)
-        self.relD.setChecked(True)
-        self.relD.setEnabled(False)
-        self.relD.setToolTip("-")
+        self.relD = QLabel()
+        self.relD.setPixmap(deltaPixmap)
+        self.relD.setFixedSize(24,24)
+        #self.relD.setCheckable(True)
+        #self.relD.setChecked(True)
+        #self.relD.setEnabled(False)
+        #self.relD.setToolTip("-")
 
         self.widD = QLineEditWithShortcut(self)
         self.widD.setToolTip("D")
         
         self.lockD = QToolButton()
-        self.lockD.setText("L")
+        self.lockD.setIcon(lockIcon)
+        self.lockD.setFixedSize(24,24)
         self.lockD.setCheckable(True)
         self.lockD.setToolTip("Alt+D or Ctrl+A")
 
         self.relA = QToolButton()
-        self.relA.setText("D")
+        self.relA.setIcon(deltaIcon)
+        self.relA.setFixedSize(24,24)
         self.relA.setCheckable(True)
         self.relA.setChecked(True)
         self.relA.setToolTip("Shift+A")
@@ -182,14 +191,16 @@ class CadWidget(QWidget):
         self.widA.setToolTip("A")
 
         self.lockA = QToolButton()
-        self.lockA.setText("L")
+        self.lockA.setIcon(lockIcon)
+        self.lockA.setFixedSize(24,24)
         self.lockA.setCheckable(True)
         self.lockA.setToolTip("Alt+A or Ctrl+A")
 
         ## Cartesian
 
         self.relX = QToolButton()
-        self.relX.setText("D")
+        self.relX.setIcon(deltaIcon)
+        self.relX.setFixedSize(24,24)
         self.relX.setCheckable(True)
         self.relX.setChecked(True)
         self.relX.setToolTip("Shift+X")
@@ -198,12 +209,14 @@ class CadWidget(QWidget):
         self.widX.setToolTip("X")
 
         self.lockX = QToolButton()
-        self.lockX.setText("L")
+        self.lockX.setIcon(lockIcon)
+        self.lockX.setFixedSize(24,24)
         self.lockX.setCheckable(True)
         self.lockX.setToolTip("Alt+X or Ctrl+A")
 
         self.relY = QToolButton()
-        self.relY.setText("D")
+        self.relY.setIcon(deltaIcon)
+        self.relY.setFixedSize(24,24)
         self.relY.setCheckable(True)
         self.relY.setChecked(True)
         self.relY.setToolTip("Shift+Y")
@@ -212,7 +225,8 @@ class CadWidget(QWidget):
         self.widY.setToolTip("Y")
 
         self.lockY = QToolButton()
-        self.lockY.setText("L")
+        self.lockY.setIcon(lockIcon)
+        self.lockY.setFixedSize(24,24)
         self.lockY.setCheckable(True)
         self.lockY.setToolTip("Alt+Y or Ctrl+A")
 
@@ -269,13 +283,13 @@ class CadWidget(QWidget):
 
         r+=1
         gridLayout.addWidget(self.relD,r,0 )
-        gridLayout.addWidget(QLabel("length"),r,1 )
+        gridLayout.addWidget(QLabel("l"),r,1 )
         gridLayout.addWidget(self.widD,r,2 )
         gridLayout.addWidget(self.lockD,r,3 )
 
         r+=1
         gridLayout.addWidget(self.relA,r,0 )
-        gridLayout.addWidget(QLabel("angle"),r,1 )
+        gridLayout.addWidget(QLabel("a"),r,1 )
         gridLayout.addWidget(self.widA,r,2 )
         gridLayout.addWidget(self.lockA,r,3 )
 

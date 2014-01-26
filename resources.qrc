@@ -1,0 +1,9 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/plugins/cadinput">
+        <file>ressources/delta.png</file>
+    </qresource>
+    <qresource prefix="/plugins/cadinput">
+        <file>ressources/lock.png</file>
+    </qresource>
+</RCC>

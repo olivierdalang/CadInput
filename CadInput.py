@@ -25,6 +25,8 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 
+import resources
+
 from CadWidget import CadWidget
 from CadGhostWidget import GhostWidget
 
