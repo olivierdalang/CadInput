@@ -64,8 +64,8 @@ class CadEventFilter(QObject):
         # This way, the event we create below won't be processed (which would be an inifinite loop)
         if ( self.inputwidget.active and self.inputwidget.enabled and event.spontaneous() and
                     (  (event.type() == QEvent.MouseMove and event.button() != Qt.MidButton) or
-                       (event.type() == QEvent.MouseButtonPress and event.button() != Qt.MidButton) or
-                       (event.type() == QEvent.MouseButtonRelease and event.button() != Qt.MidButton) ) ):
+                       (event.type() == QEvent.MouseButtonPress and event.button() == Qt.LeftButton) or
+                       (event.type() == QEvent.MouseButtonRelease and event.button() == Qt.LeftButton) ) ):
             
             # Get the snaps
             (self.snapPoint, self.snapSegment) = self._toMapSnap( event.pos() )
