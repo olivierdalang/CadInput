@@ -14,9 +14,10 @@ It currently relies on too many hacks and may therefore be unstable. **DO NOT US
 - Feedback / Bugs / Contribute
 - History
 - Technical notes
-    - MapCanvas mouseEvents hack
+    - MapCanvas mouseEvents hack (improved since plugin's v0.2)
     - Tools numeric input hack
     - Background snapping on vertexes / segments only
+    - Free drawing on QgsMapCanvas
     - What API improvements would avoid the need of those hacks ?
     - What other QGIS improvement woud make the plugin work better
 <!-- /MarkdownTOC -->
@@ -44,6 +45,7 @@ Shortcuts are accessible if the MapCanvas or the CadInputWidget have focus :
 - Combine those with "alt" or "ctrl" to toggle locked mode.
 - *C* : construction mode
 - *P* : parralel / perpendicular to a segment
+- *ESC* : unlock all locked parameters
 
 ## Known issues
 
@@ -63,15 +65,14 @@ Shortcuts are accessible if the MapCanvas or the CadInputWidget have focus :
 ## Technical notes
 
 The plugin relies on several hacks to work, since (afaik) the current QGIS API :
-- does not allow to hook into MapCanvas mouse events 
+- does not allow to hook into MapCanvas mouse events
 - does not allow numerical input for tools in scene coordinates
 - does not allow to restrict background snapping on Vertexes or Segments only
+- does not allow free drawing on the mapcanvas
 
-### MapCanvas mouseEvents hack
+### MapCanvas mouseEvents hack (improved since plugin's v0.2)
 
-To be able to capture the mouseEvents of the MapCanvas, the plugin adds a QWidget as child of the mapCanvas.
-That QWidget will recieve all mouseEvents, process them (constraining cursor position), and finally send them to the mapCanvas.
-A drawback is that there is a "double cursor", the native QGIS cursor, and a CadInput-specific cursor, inducing a little bit of confusion.
+To be able to capture the mouseEvents of the MapCanvas, the plugin installs an eventFilter on it.
 
 ### Tools numeric input hack
 
@@ -82,6 +83,11 @@ To workaround this limitation, the plugin creates a memory layer, in which a poi
 
 To achieve that result, the plugin iterates through all layers, disables their snapping, performs the snappings, and restores the snapping afterwards.
 Signals are blocked during that, so that the UI is not refreshed.
+
+### Free drawing on QgsMapCanvas
+To be able to freely draw on the MapCanvas, the plugin adds a QWidget as child of the mapCanvas.
+A drawback is that there is a "double cursor", the native QGIS cursor, and a CadInput-specific cursor, inducing a little bit of confusion.
+
 
 ### What API improvements would avoid the need of those hacks ? 
 

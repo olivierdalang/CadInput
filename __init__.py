@@ -23,5 +23,5 @@
 
 def classFactory(iface):
     # load CadInput class from file CadInput
-    from CadInput import CadInput
-    return CadInput(iface)
+    from Cad import Cad
+    return Cad(iface)

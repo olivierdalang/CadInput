@@ -9,10 +9,10 @@
 
 
 [general]
-name=Global CAD-Like Input
+name=CadInput
 qgisMinimumVersion=2.0
 description=Provides CAD-like input globally : digitize features with precise numerical input for the angle, the distance, and easily make constructions lines
-version=0.1
+version=0.2
 author=Olivier Dalang
 email=olivier.dalang@gmail.com
 

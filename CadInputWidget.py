@@ -24,104 +24,18 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
+
+import resources
 import math
 import ast
 import operator as op
 
-class CadWidget(QWidget):
+class CadInputWidget(QDockWidget):
     """
     This is CadInput's main GUI widget. It displays the edit fields for entering numerical coordinates.
     """
 
-    valueEdited = pyqtSignal()
-
-    """
-    Those editfields are made accessible by properties to lighten the code in ghostwidget
-    """
-    # Basic properties
-    @property
-    def x(self):return floatOrZero(self.widX.text())
-    @x.setter
-    def x(self, value): self.widX.setText(str(value))
-
-    @property
-    def y(self):return floatOrZero(self.widY.text())
-    @y.setter
-    def y(self, value): self.widY.setText(str(value))
-
-    @property
-    def d(self):return floatOrZero(self.widD.text())
-    @d.setter
-    def d(self, value): self.widD.setText(str(value))
-
-    @property
-    def a(self):return floatOrZero(self.widA.text())
-    @a.setter
-    def a(self, value): self.widA.setText(str(value))
-
-    #Lock properties
-    @property
-    def lx(self): return self.lockX.isChecked()
-    @lx.setter
-    def lx(self, value): self.lockX.setChecked(value)
-
-    @property
-    def ly(self): return self.lockY.isChecked()
-    @ly.setter
-    def ly(self, value): self.lockY.setChecked(value)
-
-    @property
-    def la(self): return self.lockA.isChecked()
-    @la.setter
-    def la(self, value): self.lockA.setChecked(value)
-
-    @property
-    def ld(self): return self.lockD.isChecked()
-    @ld.setter
-    def ld(self, value): self.lockD.setChecked(value)
-
-    #Relative properties
-    @property
-    def rx(self): return self.relX.isChecked()
-    @rx.setter
-    def rx(self, value): self.relX.setChecked(value)
-
-    @property
-    def ry(self): return self.relY.isChecked()
-    @ry.setter
-    def ry(self, value): self.relY.setChecked(value)
-
-    @property
-    def ra(self): return self.relA.isChecked()
-    @ra.setter
-    def ra(self, value): self.relA.setChecked(value)
-
-    @property
-    def rd(self): return True
-    @rd.setter
-    def rd(self, value): raise Exception
-
-    #Misc properties
-    @property
-    def act(self):return self.widAct.isChecked()
-    @act.setter
-    def act(self, value): self.widAct.setChecked(value)
-
-    @property
-    def c(self): return self.widC.isChecked()
-    @c.setter
-    def c(self, value): self.widC.setChecked(value)
-
-    @property
-    def per(self): return self.widPer.isChecked()
-    @per.setter
-    def per(self, value): self.widPer.setChecked(value)
-
-    @property
-    def par(self): return self.widPar.isChecked()
-    @par.setter
-    def par(self, value): self.widPar.setChecked(value)
-
+   
     def __init__(self, iface):
         QWidget.__init__(self)
 
@@ -129,6 +43,10 @@ class CadWidget(QWidget):
 
         # We want to get focus so KeyPressEvents can be processed (useful for internal shortcuts)
         self.setFocusPolicy(Qt.ClickFocus)
+
+        # We connect 
+        self.iface.mapCanvas().mapToolSet.connect( self.maptoolChanged )
+
 
 
         # Create the widgets
@@ -141,10 +59,9 @@ class CadWidget(QWidget):
 
         ## General
 
-        self.widAct = QToolButton()
-        self.widAct.setText("active")
-        self.widAct.setCheckable(True)
-        #self.widC.setToolTip("C")
+        self.widEnab = QToolButton()
+        self.widEnab.setText("enabled")
+        self.widEnab.setCheckable(True)
 
         self.widC = QToolButton()
         self.widC.setText("construction")
@@ -162,14 +79,12 @@ class CadWidget(QWidget):
         self.widPer.setToolTip("P")
 
         ## Angular
-
-        self.relD = QLabel()
-        self.relD.setPixmap(deltaPixmap)
+        self.relD = QToolButton()
+        self.relD.setIcon(deltaIcon)
         self.relD.setFixedSize(24,24)
-        #self.relD.setCheckable(True)
-        #self.relD.setChecked(True)
-        #self.relD.setEnabled(False)
-        #self.relD.setToolTip("-")
+        self.relD.setCheckable(True)
+        self.relD.setChecked(False)
+        self.relD.setEnabled(False)
 
         self.widD = QLineEditWithShortcut(self)
         self.widD.setToolTip("D")
@@ -254,16 +169,6 @@ class CadWidget(QWidget):
         self.lockA.toggled.connect(lambda state: disableIfEnabled(state,self.lockX))
         self.lockA.toggled.connect(lambda state: disableIfEnabled(state,self.lockY))
 
-        #when a field is edited by the user, we fire the valueEdited signal to be able notify the ghostwidget it must update 
-        self.widD.textEdited.connect(self.valueEdited)
-        self.widA.textEdited.connect(self.valueEdited)
-        self.widX.textEdited.connect(self.valueEdited)
-        self.widY.textEdited.connect(self.valueEdited)
-        self.lockD.toggled.connect(self.valueEdited)
-        self.lockA.toggled.connect(self.valueEdited)
-        self.lockX.toggled.connect(self.valueEdited)
-        self.lockA.toggled.connect(self.valueEdited)
-
         #when parralel is selected, deselected perpendicular, and the otherway too
         self.widPar.toggled.connect(lambda state: disableIfEnabled(state,self.widPer))
         self.widPer.toggled.connect(lambda state: disableIfEnabled(state,self.widPar))
@@ -275,7 +180,7 @@ class CadWidget(QWidget):
 
         r=0
         sublayout = QHBoxLayout()
-        sublayout.addWidget(self.widAct)
+        sublayout.addWidget(self.widEnab)
         sublayout.addWidget(self.widC)
         sublayout.addWidget(self.widPar)
         sublayout.addWidget(self.widPer)
@@ -283,7 +188,7 @@ class CadWidget(QWidget):
 
         r+=1
         gridLayout.addWidget(self.relD,r,0 )
-        gridLayout.addWidget(QLabel("l"),r,1 )
+        gridLayout.addWidget(QLabel("d"),r,1 )
         gridLayout.addWidget(self.widD,r,2 )
         gridLayout.addWidget(self.lockD,r,3 )
 
@@ -308,7 +213,13 @@ class CadWidget(QWidget):
         gridLayout.setRowStretch( r, 1 ) #does not work ?!
         gridLayout.setColumnStretch( 2, 1 )
 
-        self.setLayout(gridLayout)
+
+
+        # And finally add to the MainWindow
+        widget = QWidget()
+        widget.setLayout(gridLayout)
+        self.setWidget(widget)
+        self.iface.mainWindow().addDockWidget(Qt.LeftDockWidgetArea, self)
     
     def keyPressEvent(self, event):
         """
@@ -355,6 +266,8 @@ class CadWidget(QWidget):
                 self.per = True
             elif self.per:
                 self.per = False
+        elif event.key() == Qt.Key_Escape:
+            self.unlockAll()
         else:
             event.ignore()
 
@@ -376,6 +289,104 @@ class CadWidget(QWidget):
         self.ly = False
         self.la = False
         self.ld = False
+
+    def maptoolChanged(self):
+        self.active = (self.iface.mapCanvas().mapTool() is not None and self.iface.mapCanvas().mapTool().isEditTool())
+
+
+
+    """
+    Those properties are just to lighten the code in CadEventFilter
+    """
+
+    # Basic properties
+    @property
+    def x(self): return floatOrZero(self.widX.text())
+    @x.setter
+    def x(self, value): self.widX.setText(str(value))
+
+    @property
+    def y(self): return floatOrZero(self.widY.text())
+    @y.setter
+    def y(self, value): self.widY.setText(str(value))
+
+    @property
+    def d(self): return floatOrZero(self.widD.text())
+    @d.setter
+    def d(self, value): self.widD.setText(str(value))
+
+    @property
+    def a(self): return floatOrZero(self.widA.text())
+    @a.setter
+    def a(self, value): self.widA.setText(str(value))
+
+    #Lock properties
+    @property
+    def lx(self): return self.lockX.isChecked()
+    @lx.setter
+    def lx(self, value): self.lockX.setChecked(value)
+
+    @property
+    def ly(self): return self.lockY.isChecked()
+    @ly.setter
+    def ly(self, value): self.lockY.setChecked(value)
+
+    @property
+    def la(self): return self.lockA.isChecked()
+    @la.setter
+    def la(self, value): self.lockA.setChecked(value)
+
+    @property
+    def ld(self): return self.lockD.isChecked()
+    @ld.setter
+    def ld(self, value): self.lockD.setChecked(value)
+
+    #Relative properties
+    @property
+    def rx(self): return self.relX.isChecked()
+    @rx.setter
+    def rx(self, value): self.relX.setChecked(value)
+
+    @property
+    def ry(self): return self.relY.isChecked()
+    @ry.setter
+    def ry(self, value): self.relY.setChecked(value)
+
+    @property
+    def ra(self): return self.relA.isChecked()
+    @ra.setter
+    def ra(self, value): self.relA.setChecked(value)
+
+    @property
+    def rd(self): return True
+    @rd.setter
+    def rd(self, value): raise Exception
+
+    #Misc properties
+    @property
+    def enabled(self): return self.widEnab.isChecked()
+    @enabled.setter
+    def enabled(self, value): self.widEnab.setChecked(value)
+
+    @property
+    def active(self): return self.isEnabled()
+    @active.setter
+    def active(self, value): self.setEnabled(value)
+
+    @property
+    def c(self): return self.widC.isChecked()
+    @c.setter
+    def c(self, value): self.widC.setChecked(value)
+
+    @property
+    def per(self): return self.widPer.isChecked()
+    @per.setter
+    def per(self, value): self.widPer.setChecked(value)
+
+    @property
+    def par(self): return self.widPar.isChecked()
+    @par.setter
+    def par(self, value): self.widPar.setChecked(value)
 
 def floatOrZero(value):
     """

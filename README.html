@@ -132,9 +132,10 @@ body{font-size:16px;}
 - Feedback / Bugs / Contribute
 - History
 - Technical notes
-    - MapCanvas mouseEvents hack
+    - MapCanvas mouseEvents hack (improved since plugin's v0.2)
     - Tools numeric input hack
     - Background snapping on vertexes / segments only
+    - Free drawing on QgsMapCanvas
     - What API improvements would avoid the need of those hacks ?
     - What other QGIS improvement woud make the plugin work better
 <!-- /MarkdownTOC --></p>
@@ -154,6 +155,7 @@ Setting a value to an empty string will unlock the value.</p>
 <li>Combine those with "alt" or "ctrl" to toggle locked mode.</li>
 <li><em>C</em> : construction mode</li>
 <li><em>P</em> : parralel / perpendicular to a segment</li>
+<li><em>ESC</em> : unlock all locked parameters</li>
 </ul>
 <h2 id="known-issues">Known issues</h2>
 <ul>
@@ -168,19 +170,21 @@ Setting a value to an empty string will unlock the value.</p>
 <p>...</p>
 <h2 id="technical-notes">Technical notes</h2>
 <p>The plugin relies on several hacks to work, since (afaik) the current QGIS API :
-- does not allow to hook into MapCanvas mouse events 
+- does not allow to hook into MapCanvas mouse events
 - does not allow numerical input for tools in scene coordinates
-- does not allow to restrict background snapping on Vertexes or Segments only</p>
-<h3 id="mapcanvas-mouseevents-hack">MapCanvas mouseEvents hack</h3>
-<p>To be able to capture the mouseEvents of the MapCanvas, the plugin adds a QWidget as child of the mapCanvas.
-That QWidget will recieve all mouseEvents, process them (constraining cursor position), and finally send them to the mapCanvas.
-A drawback is that there is a "double cursor", the native QGIS cursor, and a CadInput-specific cursor, inducing a little bit of confusion.</p>
+- does not allow to restrict background snapping on Vertexes or Segments only
+- does not allow free drawing on the mapcanvas</p>
+<h3 id="mapcanvas-mouseevents-hack-improved-since-plugin-s-v0-2">MapCanvas mouseEvents hack (improved since plugin's v0.2)</h3>
+<p>To be able to capture the mouseEvents of the MapCanvas, the plugin installs an eventFilter on it.</p>
 <h3 id="tools-numeric-input-hack">Tools numeric input hack</h3>
 <p>Capture the mouseEvents is fine for graphical feedback, but does not allow for precise input (since mouseEvents are in pixels, and not in map units).
 To workaround this limitation, the plugin creates a memory layer, in which a point is created each time a precise coordinate input is needed, to which the native tools will snap.</p>
 <h3 id="background-snapping-on-vertexes-segments-only">Background snapping on vertexes / segments only</h3>
 <p>To achieve that result, the plugin iterates through all layers, disables their snapping, performs the snappings, and restores the snapping afterwards.
 Signals are blocked during that, so that the UI is not refreshed.</p>
+<h3 id="free-drawing-on-qgsmapcanvas">Free drawing on QgsMapCanvas</h3>
+<p>To be able to freely draw on the MapCanvas, the plugin adds a QWidget as child of the mapCanvas.
+A drawback is that there is a "double cursor", the native QGIS cursor, and a CadInput-specific cursor, inducing a little bit of confusion.</p>
 <h3 id="what-api-improvements-would-avoid-the-need-of-those-hacks">What API improvements would avoid the need of those hacks ?</h3>
 <ul>
 <li><strong>Have QgsMapCanvas emit signals on mouseEvents </strong></li>
