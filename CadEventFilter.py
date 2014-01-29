@@ -26,7 +26,6 @@ from qgis.core import *
 from qgis.gui import *
 
 import math
-import random
 
 class CadEventFilter(QObject):
     """

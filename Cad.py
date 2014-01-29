@@ -25,9 +25,13 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 
+import resources
+
 from CadInputWidget import CadInputWidget
 from CadEventFilter import CadEventFilter
 from CadPaintWidget import CadPaintWidget
+
+from CadHelp import CadHelp
 
 
 class Cad(QObject):
@@ -38,6 +42,7 @@ class Cad(QObject):
 
     def initGui(self):
         QgsMessageLog.logMessage("init","CadInputTest")
+
         
         # CadInputWidget : this widget displays the inputs allowing numerical entry
         self.inputwidget = CadInputWidget(self.iface)
@@ -66,6 +71,21 @@ class Cad(QObject):
             self.iface.mapCanvas().setLayout( layout )
         self.iface.mapCanvas().layout().addWidget( self.paintwidget )
 
+
+
+        # Create help action 
+        self.helpAction = QAction( QIcon(":/plugins/cadinput/resources/about.png"), u"Help", self.iface.mainWindow())
+        self.helpAction.triggered.connect( self.doHelpAction )
+
+        # Create enable action 
+        self.enableAction = self.inputwidget.enableAction
+
+        # Add menu and toolbars items
+        self.iface.addPluginToMenu(u"&CadInput", self.helpAction)
+        self.iface.addPluginToMenu(u"&CadInput", self.enableAction)
+        self.iface.addToolBarIcon(self.enableAction)
+
+
     def unload(self):
 
         #we remove the eventFilters
@@ -75,3 +95,10 @@ class Cad(QObject):
         #and we remove the widgets also
         self.inputwidget.deleteLater()
         self.paintwidget.deleteLater()
+
+        #and remove the item menu
+        self.iface.removePluginMenu(u"&CadInput", self.helpAction)
+        self.iface.removeToolBarIcon(self.helpAction)
+
+    def doHelpAction(self):
+        self.aboutWindow = CadHelp()

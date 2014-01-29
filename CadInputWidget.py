@@ -51,20 +51,23 @@ class CadInputWidget(QDockWidget):
         self.maptoolChanged()
 
 
+        # Create the enable action
+        self.enableAction = QAction( QIcon(":/plugins/cadinput/resources/icon.png"), u"Enable", self.iface.mainWindow())
+        self.enableAction.setCheckable(True)
 
         # Create the widgets
 
         ## Load the images
-        lockPixmap = QPixmap(":/plugins/cadinput/ressources/lock.png")
+        lockPixmap = QPixmap(":/plugins/cadinput/resources/lock.png")
         lockIcon = QIcon( lockPixmap )
-        deltaPixmap = QPixmap(":/plugins/cadinput/ressources/delta.png")
+        deltaPixmap = QPixmap(":/plugins/cadinput/resources/delta.png")
         deltaIcon = QIcon(  deltaPixmap )
 
         ## General
 
         self.widEnab = QToolButton()
-        self.widEnab.setText("enabled")
-        self.widEnab.setCheckable(True)
+        self.widEnab.setDefaultAction( self.enableAction )
+        self.widEnab.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         self.widC = QToolButton()
         self.widC.setText("construction")
@@ -367,9 +370,9 @@ class CadInputWidget(QDockWidget):
 
     #Misc properties
     @property
-    def enabled(self): return self.widEnab.isChecked()
+    def enabled(self): return self.enableAction.isChecked()
     @enabled.setter
-    def enabled(self, value): self.widEnab.setChecked(value)
+    def enabled(self, value): self.enableAction.setChecked(value)
 
     @property
     def active(self): return self.isEnabled()

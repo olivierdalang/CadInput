@@ -11,8 +11,8 @@
 [general]
 name=CadInput
 qgisMinimumVersion=2.0
-description=Provides CAD-like input globally : digitize features with precise numerical input for the angle, the distance, and easily make constructions lines
-version=0.2
+description=Provides CAD-like input for QGIS : digitize features with precise numerical mouse constraints
+version=0.3
 author=Olivier Dalang
 email=olivier.dalang@gmail.com
 
@@ -24,12 +24,12 @@ email=olivier.dalang@gmail.com
 # changelog=
 
 # tags are comma separated with spaces allowed
-tags=
+tags=digitizing, cad, vector
 
-homepage=
-tracker=
-repository=
-icon=icon.png
+homepage=https://github.com/olivierdalang/CadInput
+tracker=https://github.com/olivierdalang/CadInput/issues
+repository=https://github.com/olivierdalang/CadInput
+icon=resources/icon.png
 # experimental flag
 experimental=True
 

@@ -1,9 +1,15 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource prefix="/plugins/cadinput">
-        <file>ressources/delta.png</file>
+        <file>resources/delta.png</file>
     </qresource>
     <qresource prefix="/plugins/cadinput">
-        <file>ressources/lock.png</file>
+        <file>resources/lock.png</file>
+    </qresource>
+    <qresource prefix="/plugins/cadinput">
+        <file>resources/about.png</file>
+    </qresource>
+    <qresource prefix="/plugins/cadinput">
+        <file>resources/icon.png</file>
     </qresource>
 </RCC>
