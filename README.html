@@ -130,7 +130,10 @@ body{font-size:16px;}
     - Shortcuts
 - Known issues
 - Feedback / Bugs / Contribute
-- History
+- Roadmap
+    - Features done
+    - Features planned
+    - Features ideas
 - Technical notes
     - MapCanvas mouseEvents hack (improved since plugin's v0.2)
     - Tools numeric input hack
@@ -166,8 +169,27 @@ Setting a value to an empty string will unlock the value.</p>
 </ul>
 <h2 id="feedback-bugs-contribute">Feedback / Bugs / Contribute</h2>
 <p>...</p>
-<h2 id="history">History</h2>
-<p>...</p>
+<h2 id="roadmap">Roadmap</h2>
+<h3 id="features-done">Features done</h3>
+<ul>
+<li>[x] available with all the QGIS map tools (probably)</li>
+<li>[x] digitize using relative/absolute XY coordinates</li>
+<li>[x] digitize using relative/absolute angular coordinates</li>
+<li>[x] parralel/perpendicular from existing features</li>
+<li>[x] extend/trim a line using segment's snapping</li>
+<li>[x] mathematical input</li>
+</ul>
+<h3 id="features-planned">Features planned</h3>
+<ul>
+<li>[ ] incremental values lock (for instance 30°, or 10m grid)</li>
+<li>[ ] set origin (for absolute mode with custom origin)</li>
+<li>[ ] intersection of segments / having segments as a true constraint (not only for parralel/perpendicular)</li>
+</ul>
+<h3 id="features-ideas">Features ideas</h3>
+<ul>
+<li>[ ] one-click extend/trim a line (not directly linked to CadInput -&gt; CadTools ?)</li>
+<li>[ ] midpoints (can be achieved using D/2)</li>
+</ul>
 <h2 id="technical-notes">Technical notes</h2>
 <p>The plugin relies on several hacks to work, since (afaik) the current QGIS API :
 - does not allow to hook into MapCanvas mouse events

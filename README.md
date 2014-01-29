@@ -12,7 +12,10 @@ It currently relies on too many hacks and may therefore be unstable. **DO NOT US
     - Shortcuts
 - Known issues
 - Feedback / Bugs / Contribute
-- History
+- Roadmap
+    - Features done
+    - Features planned
+    - Features ideas
 - Technical notes
     - MapCanvas mouseEvents hack (improved since plugin's v0.2)
     - Tools numeric input hack
@@ -58,9 +61,30 @@ Shortcuts are accessible if the MapCanvas or the CadInputWidget have focus :
 
 ...
 
-## History
+## Roadmap
 
-...
+### Features done
+
+- [x] available with all the QGIS map tools (probably)
+- [x] digitize using relative/absolute XY coordinates
+- [x] digitize using relative/absolute angular coordinates
+- [x] parralel/perpendicular from existing features
+- [x] extend/trim a line using segment's snapping
+- [x] mathematical input
+
+### Features planned
+
+- [ ] incremental values lock (for instance 30°, or 10m grid)
+- [ ] set origin (for absolute mode with custom origin)
+- [ ] intersection of segments / having segments as a true constraint (not only for parralel/perpendicular)
+
+
+### Features ideas
+
+- [ ] one-click extend/trim a line (not directly linked to CadInput -> CadTools ?)
+- [ ] midpoints (can be achieved using D/2)
+
+
 
 ## Technical notes
 
