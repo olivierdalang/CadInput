@@ -44,8 +44,11 @@ class CadInputWidget(QDockWidget):
         # We want to get focus so KeyPressEvents can be processed (useful for internal shortcuts)
         self.setFocusPolicy(Qt.ClickFocus)
 
-        # We connect 
+        # We connect the mapToolSet signal so we can enable/disable the widget
         self.iface.mapCanvas().mapToolSet.connect( self.maptoolChanged )
+
+        # And we run it so it sets the right state upon loading
+        self.maptoolChanged()
 
 
 
