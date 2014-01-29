@@ -76,7 +76,7 @@ class CadPaintWidget(QWidget):
         pSnapLine = QPen(QColor(200,100,50,150), 1, Qt.DashLine)
         pCursor = QPen(QColor(100,255,100, 255), 2)
 
-        #Draw snap
+        #Draw point snap
         if self.eventfilter.snapPoint is not None:
 
             x = self._tX( self.eventfilter.snapPoint.x())
@@ -95,6 +95,7 @@ class CadPaintWidget(QWidget):
                                 self._tY( self.eventfilter.p3.y())  )
 
 
+        #Draw segment snap
         if self.eventfilter.snapSegment is not None:
             painter.setPen( pSnap )
 
@@ -111,9 +112,9 @@ class CadPaintWidget(QWidget):
                                 self._tY( self.eventfilter.p3.y())  )
 
 
-        #Draw segment
+        #Draw segment par/per input
         if (self.inputwidget.per or self.inputwidget.par) and self.eventfilter.snapSegment is not None:
-            painter.setPen( pLocked )
+            painter.setPen( pConstruction2 )
 
             painter.drawLine(   self._tX( self.eventfilter.snapSegment[1].x()),
                                 self._tY( self.eventfilter.snapSegment[1].y()),

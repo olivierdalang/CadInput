@@ -66,6 +66,8 @@ Or send me some feedback at : olivier.dalang@gmail.com
 
 ### Features ideas
 
+Please submit your ideas on the tracker : https://github.com/olivierdalang/CadInput/issues
+
 - [ ] one-click extend/trim a line (not directly linked to CadInput -> CadTools ?)
 - [ ] midpoints (can be achieved using D/2)
 
