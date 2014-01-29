@@ -1,154 +1,22 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><style>html { font-size: 100%; overflow-y: scroll; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+<h1>CadInput</h1>
 
-body{
-  color:#444;
-  font-family:Georgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman',
-              "Hiragino Sans GB", "STXihei", "微软雅黑", serif;
-  font-size:12px;
-  line-height:1.5em;
-  background:#fefefe;
-  width: 45em;
-  margin: 10px auto;
-  padding: 1em;
-  outline: 1300px solid #FAFAFA;
-}
-
-a{ color: #0645ad; text-decoration:none;}
-a:visited{ color: #0b0080; }
-a:hover{ color: #06e; }
-a:active{ color:#faa700; }
-a:focus{ outline: thin dotted; }
-a:hover, a:active{ outline: 0; }
-
-span.backtick {
-  border:1px solid #EAEAEA;
-  border-radius:3px;
-  background:#F8F8F8;
-  padding:0 3px 0 3px;
-}
-
-::-moz-selection{background:rgba(255,255,0,0.3);color:#000}
-::selection{background:rgba(255,255,0,0.3);color:#000}
-
-a::-moz-selection{background:rgba(255,255,0,0.3);color:#0645ad}
-a::selection{background:rgba(255,255,0,0.3);color:#0645ad}
-
-p{
-margin:1em 0;
-}
-
-img{
-max-width:100%;
-}
-
-h1,h2,h3,h4,h5,h6{
-font-weight:normal;
-color:#111;
-line-height:1em;
-}
-h4,h5,h6{ font-weight: bold; }
-h1{ font-size:2.5em; }
-h2{ font-size:2em; border-bottom:1px solid silver; padding-bottom: 5px; }
-h3{ font-size:1.5em; }
-h4{ font-size:1.2em; }
-h5{ font-size:1em; }
-h6{ font-size:0.9em; }
-
-blockquote{
-color:#666666;
-margin:0;
-padding-left: 3em;
-border-left: 0.5em #EEE solid;
-}
-hr { display: block; height: 2px; border: 0; border-top: 1px solid #aaa;border-bottom: 1px solid #eee; margin: 1em 0; padding: 0; }
-
-
-pre , code, kbd, samp { 
-  color: #000; 
-  font-family: monospace; 
-  font-size: 0.88em; 
-  border-radius:3px;
-  background-color: #F8F8F8;
-  border: 1px solid #CCC; 
-}
-pre { white-space: pre; white-space: pre-wrap; word-wrap: break-word; padding: 5px 12px;}
-pre code { border: 0px !important; padding: 0;}
-code { padding: 0 3px 0 3px; }
-
-b, strong { font-weight: bold; }
-
-dfn { font-style: italic; }
-
-ins { background: #ff9; color: #000; text-decoration: none; }
-
-mark { background: #ff0; color: #000; font-style: italic; font-weight: bold; }
-
-sub, sup { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline; }
-sup { top: -0.5em; }
-sub { bottom: -0.25em; }
-
-ul, ol { margin: 1em 0; padding: 0 0 0 2em; }
-li p:last-child { margin:0 }
-dd { margin: 0 0 0 2em; }
-
-img { border: 0; -ms-interpolation-mode: bicubic; vertical-align: middle; }
-
-table { border-collapse: collapse; border-spacing: 0; }
-td { vertical-align: top; }
-
-@media only screen and (min-width: 480px) {
-body{font-size:14px;}
-}
-
-@media only screen and (min-width: 768px) {
-body{font-size:16px;}
-}
-
-@media print {
-  * { background: transparent !important; color: black !important; filter:none !important; -ms-filter: none !important; }
-  body{font-size:12pt; max-width:100%; outline:none;}
-  a, a:visited { text-decoration: underline; }
-  hr { height: 1px; border:0; border-bottom:1px solid black; }
-  a[href]:after { content: " (" attr(href) ")"; }
-  abbr[title]:after { content: " (" attr(title) ")"; }
-  .ir a:after, a[href^="javascript:"]:after, a[href^="#"]:after { content: ""; }
-  pre, blockquote { border: 1px solid #999; padding-right: 1em; page-break-inside: avoid; }
-  tr, img { page-break-inside: avoid; }
-  img { max-width: 100% !important; }
-  @page :left { margin: 15mm 20mm 15mm 10mm; }
-  @page :right { margin: 15mm 10mm 15mm 20mm; }
-  p, h2, h3 { orphans: 3; widows: 3; }
-  h2, h3 { page-break-after: avoid; }
-}
-</style><title>README</title></head><body><h1 id="cadinput">CadInput</h1>
 <p>CadInput is a <strong>PROTOTYPE</strong> QGIS Python plugin that allows to numerically constrain the cursor to achieve efficient and precise digitizing, as possible in CAD packages, with any QGIS tool.</p>
+
 <p>It currently relies on too many hacks and may therefore be unstable. <strong>DO NOT USE THIS IN PRODUCTION !!!</strong></p>
-<h2 id="toc">TOC</h2>
-<p><!-- MarkdownTOC -->
-- How to use
-    - Editfields
-    - Shortcuts
-- Known issues
-- Feedback / Bugs / Contribute
-- Roadmap
-    - Features done
-    - Features planned
-    - Features ideas
-- Technical notes
-    - MapCanvas mouseEvents hack (improved since plugin's v0.2)
-    - Tools numeric input hack
-    - Background snapping on vertexes / segments only
-    - Free drawing on QgsMapCanvas
-    - What API improvements would avoid the need of those hacks ?
-    - What other QGIS improvement woud make the plugin work better
-<!-- /MarkdownTOC --></p>
-<h2 id="how-to-use">How to use</h2>
-<h3 id="editfields">Editfields</h3>
+
+<h2>How to use</h2>
+
+<h3>Editfields</h3>
+
 <p>Validating an editfield with Return will lock the value.
 Setting a value to an empty string will unlock the value.</p>
+
 <p>You can enter basic math operations in the editfields.</p>
-<h3 id="shortcuts">Shortcuts</h3>
+
+<h3>Shortcuts</h3>
+
 <p>Shortcuts are accessible if the MapCanvas or the CadInputWidget have focus :</p>
+
 <ul>
 <li><em>A</em> : angle</li>
 <li><em>D</em> : distance</li>
@@ -160,17 +28,26 @@ Setting a value to an empty string will unlock the value.</p>
 <li><em>P</em> : parralel / perpendicular to a segment</li>
 <li><em>ESC</em> : unlock all locked parameters</li>
 </ul>
-<h2 id="known-issues">Known issues</h2>
+
+<h2>Known issues</h2>
+
 <ul>
-<li>Several (cadinput_technical_snap_layer) entries will flood the snap setting windows (one at each project load).</li>
 <li>A CRS Prompt will appear at first use of the tool if "use default CRS for new layers" is not set in the options.</li>
-<li>The snapping radius of the tool is hard coded to 20. The best is to set your radius to 20 too so it's more usable. </li>
+<li>The snapping radius of the tool is hard coded to 20. The best is to set your radius to 20 too so it's more usable.</li>
+<li>The first point when activating is based upon the 0,0 point rather than last click (will be fixed when there's a CanvasClicked signal)</li>
 <li>...</li>
 </ul>
-<h2 id="feedback-bugs-contribute">Feedback / Bugs / Contribute</h2>
-<p>...</p>
-<h2 id="roadmap">Roadmap</h2>
-<h3 id="features-done">Features done</h3>
+
+<h2>Feedback / Bugs / Contribute</h2>
+
+<p>Please report bugs and ideas on the issue tracker : https://github.com/olivierdalang/CadInput/issues</p>
+
+<p>Or send me some feedback at : olivier.dalang@gmail.com</p>
+
+<h2>Roadmap</h2>
+
+<h3>Features done</h3>
+
 <ul>
 <li>[x] available with all the QGIS map tools (probably)</li>
 <li>[x] digitize using relative/absolute XY coordinates</li>
@@ -179,55 +56,100 @@ Setting a value to an empty string will unlock the value.</p>
 <li>[x] extend/trim a line using segment's snapping</li>
 <li>[x] mathematical input</li>
 </ul>
-<h3 id="features-planned">Features planned</h3>
+
+<h3>Features planned</h3>
+
 <ul>
 <li>[ ] incremental values lock (for instance 30°, or 10m grid)</li>
 <li>[ ] set origin (for absolute mode with custom origin)</li>
 <li>[ ] intersection of segments / having segments as a true constraint (not only for parralel/perpendicular)</li>
+<li>[ ] intersection of arcs / having arcs as a true constraint (not only for parralel/perpendicular)</li>
+<li>[ ] allow to use when not editing (useful to measures elements or angles)</li>
+<li>[ ] input relative to north / other units</li>
 </ul>
-<h3 id="features-ideas">Features ideas</h3>
+
+<h3>Features ideas</h3>
+
 <ul>
-<li>[ ] one-click extend/trim a line (not directly linked to CadInput -&gt; CadTools ?)</li>
+<li>[ ] one-click extend/trim a line (not directly linked to CadInput -> CadTools ?)</li>
 <li>[ ] midpoints (can be achieved using D/2)</li>
 </ul>
-<h2 id="technical-notes">Technical notes</h2>
+
+<h2>Version history</h2>
+
+<ul>
+<li>2014-01-29 - version 0.3 : intial experimental release</li>
+</ul>
+
+<h2>Technical notes</h2>
+
 <p>The plugin relies on several hacks to work, since (afaik) the current QGIS API :
 - does not allow to hook into MapCanvas mouse events
 - does not allow numerical input for tools in scene coordinates
 - does not allow to restrict background snapping on Vertexes or Segments only
 - does not allow free drawing on the mapcanvas</p>
-<h3 id="mapcanvas-mouseevents-hack-improved-since-plugin-s-v0-2">MapCanvas mouseEvents hack (improved since plugin's v0.2)</h3>
+
+<h3>MapCanvas mouseEvents hack (improved since plugin's v0.2)</h3>
+
 <p>To be able to capture the mouseEvents of the MapCanvas, the plugin installs an eventFilter on it.</p>
-<h3 id="tools-numeric-input-hack">Tools numeric input hack</h3>
-<p>Capture the mouseEvents is fine for graphical feedback, but does not allow for precise input (since mouseEvents are in pixels, and not in map units).
-To workaround this limitation, the plugin creates a memory layer, in which a point is created each time a precise coordinate input is needed, to which the native tools will snap.</p>
-<h3 id="background-snapping-on-vertexes-segments-only">Background snapping on vertexes / segments only</h3>
-<p>To achieve that result, the plugin iterates through all layers, disables their snapping, performs the snappings, and restores the snapping afterwards.
+
+<h3>Tools numeric input hack</h3>
+
+<p>Capturing and editing the mouseEvents is fine for graphical feedback, but does not allow for precise input (since mouseEvents are in pixels, and not in map units).
+To workaround this limitation, the plugin creates a memory layer, in which a point is created each time a precise coordinate input is needed, to which the native tools will snap. Unfortunately, to snap to this layer only without possible interference from other regular layers snapping, the plugin must iterate through all layers and remove (temporarily) their snapping.</p>
+
+<h3>Background snapping on vertexes / segments only</h3>
+
+<p>To achieve that result, the plugin iterates through all layers, disables their snapping for vertexes, performs the snappings for segments, then reenables their snapping for vertexes, disables their snapping for segments, performs the snapping for vertexes, then reenables their snapping for segments.
 Signals are blocked during that, so that the UI is not refreshed.</p>
-<h3 id="free-drawing-on-qgsmapcanvas">Free drawing on QgsMapCanvas</h3>
+
+<h3>Free drawing on QgsMapCanvas</h3>
+
 <p>To be able to freely draw on the MapCanvas, the plugin adds a QWidget as child of the mapCanvas.
 A drawback is that there is a "double cursor", the native QGIS cursor, and a CadInput-specific cursor, inducing a little bit of confusion.</p>
-<h3 id="what-api-improvements-would-avoid-the-need-of-those-hacks">What API improvements would avoid the need of those hacks ?</h3>
+
+<h3>What API improvements would avoid the need of those hacks ?</h3>
+
 <ul>
-<li><strong>Have QgsMapCanvas emit signals on mouseEvents </strong></li>
+<li><strong>A. Have QgsMapCanvas emit signals on mouseEvents (not sure if usable for the plugin)</strong></li>
 </ul>
-<p>In current version, QgsMapCanvas emits xyCoordinates(const QgsPoint &amp;p) on mouseMoveEvent. The same could be done for mousePressEvent and mouseReleaseEvent (maybe with better names?).</p>
+
+<p>In current version, QgsMapCanvas emits xyCoordinates(const QgsPoint &amp;p) on mouseMoveEvent. The same could be done for mousePressEvent and mouseReleaseEvent (maybe with better names?).
+I'm not sure this would be usable for the plugin though, since it needs to be able to modify those events too.</p>
+
 <ul>
-<li><strong>Allow to input scene coordinats to QgsMapTool</strong></li>
+<li><strong>B. Allow to input scene coordinats to QgsMapTool</strong></li>
 </ul>
+
 <p>For instance by adding <code>void QgsMapTool::scenePressEvent( QMouseEvent *e, QgsPoint *p )</code> (and the same for move and release events).</p>
+
 <p>Or by adding an optional <code>scenePos *pos=0</code> parameter to the existing <code>void QgsMapTool::canvasPressEvent( QMouseEvent *e )</code>
 This could anyways be very useful for different uses (automation ?).</p>
+
 <p>The problem is, it seems the snapping/coordinate translation is implemented by each Tool subclass... So it will be some work !</p>
+
 <ul>
-<li><strong>Allow to restrict snapping for background layers, just as there is for the active layer</strong></li>
+<li><strong>C. Allow to snap to a specific layer</strong></li>
 </ul>
+
+<p>Add a QgsMapCanvasSnapper's snapToSpecificLayer method)
+<code>int snapToSpecificLayers( const QPoint&amp; p, QList&lt;QgsSnappingResult&gt;&amp; results, QgsVectorLayer layer, QgsSnapper::SnappingType snap_to, double snappingTol = -1, const QList&lt;QgsPoint&gt;&amp; excludePoints = QList&lt;QgsPoint&gt;() );</code>
+ (exactly the same as snapToActiveLayer except it's not the active layer</p>
+
+<ul>
+<li><strong>D. Allow to restrict snapping for background layers, just as there is for the active layer</strong></li>
+</ul>
+
 <p>Modify QgsMapCanvasSnapper's snapToBackgroundLayers method to work like snapToCurrentLayer.
 <code>int snapToBackgroundLayers( const QPoint&amp; p, QList&lt;QgsSnappingResult&gt;&amp; results, const QList&lt;QgsPoint&gt;&amp; excludePoints = QList&lt;QgsPoint&gt;() );</code> would become 
 <code>int snapToBackgroundLayers( const QPoint&amp; p, QList&lt;QgsSnappingResult&gt;&amp; results, QgsSnapper::SnappingType snap_to, double snappingTol = -1, const QList&lt;QgsPoint&gt;&amp; excludePoints = QList&lt;QgsPoint&gt;() );</code></p>
+
 <p>Alternatively, QgsSnappingResult could have a field informing wheter it was a vertex or a segment snap.</p>
-<h3 id="what-other-qgis-improvement-woud-make-the-plugin-work-better">What other QGIS improvement woud make the plugin work better</h3>
+
+<h3>What other QGIS improvement woud make the plugin work better</h3>
+
 <ul>
-<li><strong>Click-drag tools should allow click-move-click input method</strong></li>
+<li><strong>E. Click-drag tools should allow click-move-click input method</strong></li>
 </ul>
-<p>Some tools work in click-click mode (add feature...), but some other in click-drag mode (move vertex, ...). That second method is less common in CAD softwares, since it is less practical. Those click-drag tools work currently with the plugin, but the user must keep the mouse pressed, which is a bit annoying. Allowing click-move-click mode for those tool as well would be an improvement.</p></body></html>
+
+<p>Some tools work in click-click mode (add feature...), but some other in click-drag mode (move vertex, ...). That second method is less common in CAD softwares, since it is less practical. Those click-drag tools work currently with the plugin, but the user must keep the mouse pressed, which is a bit annoying. Allowing click-move-click mode for those tool as well would be an improvement.</p>

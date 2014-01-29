@@ -5,26 +5,6 @@ CadInput is a __PROTOTYPE__ QGIS Python plugin that allows to numerically constr
 
 It currently relies on too many hacks and may therefore be unstable. **DO NOT USE THIS IN PRODUCTION !!!**
 
-## TOC
-<!-- MarkdownTOC -->
-- How to use
-    - Editfields
-    - Shortcuts
-- Known issues
-- Feedback / Bugs / Contribute
-- Roadmap
-    - Features done
-    - Features planned
-    - Features ideas
-- Technical notes
-    - MapCanvas mouseEvents hack (improved since plugin's v0.2)
-    - Tools numeric input hack
-    - Background snapping on vertexes / segments only
-    - Free drawing on QgsMapCanvas
-    - What API improvements would avoid the need of those hacks ?
-    - What other QGIS improvement woud make the plugin work better
-<!-- /MarkdownTOC -->
-
 
 ## How to use
 
@@ -52,14 +32,16 @@ Shortcuts are accessible if the MapCanvas or the CadInputWidget have focus :
 
 ## Known issues
 
-- Several (cadinput_technical_snap_layer) entries will flood the snap setting windows (one at each project load).
 - A CRS Prompt will appear at first use of the tool if "use default CRS for new layers" is not set in the options.
-- The snapping radius of the tool is hard coded to 20. The best is to set your radius to 20 too so it's more usable. 
+- The snapping radius of the tool is hard coded to 20. The best is to set your radius to 20 too so it's more usable.
+- The first point when activating is based upon the 0,0 point rather than last click (will be fixed when there's a CanvasClicked signal)
 - ...
 
 ## Feedback / Bugs / Contribute
 
-...
+Please report bugs and ideas on the issue tracker : https://github.com/olivierdalang/CadInput/issues
+
+Or send me some feedback at : olivier.dalang@gmail.com
 
 ## Roadmap
 
@@ -77,6 +59,9 @@ Shortcuts are accessible if the MapCanvas or the CadInputWidget have focus :
 - [ ] incremental values lock (for instance 30°, or 10m grid)
 - [ ] set origin (for absolute mode with custom origin)
 - [ ] intersection of segments / having segments as a true constraint (not only for parralel/perpendicular)
+- [ ] intersection of arcs / having arcs as a true constraint (not only for parralel/perpendicular)
+- [ ] allow to use when not editing (useful to measures elements or angles)
+- [ ] input relative to north / other units
 
 
 ### Features ideas
@@ -84,7 +69,9 @@ Shortcuts are accessible if the MapCanvas or the CadInputWidget have focus :
 - [ ] one-click extend/trim a line (not directly linked to CadInput -> CadTools ?)
 - [ ] midpoints (can be achieved using D/2)
 
+## Version history
 
+- 2014-01-29 - version 0.3 : intial experimental release
 
 ## Technical notes
 
@@ -100,12 +87,12 @@ To be able to capture the mouseEvents of the MapCanvas, the plugin installs an e
 
 ### Tools numeric input hack
 
-Capture the mouseEvents is fine for graphical feedback, but does not allow for precise input (since mouseEvents are in pixels, and not in map units).
-To workaround this limitation, the plugin creates a memory layer, in which a point is created each time a precise coordinate input is needed, to which the native tools will snap.
+Capturing and editing the mouseEvents is fine for graphical feedback, but does not allow for precise input (since mouseEvents are in pixels, and not in map units).
+To workaround this limitation, the plugin creates a memory layer, in which a point is created each time a precise coordinate input is needed, to which the native tools will snap. Unfortunately, to snap to this layer only without possible interference from other regular layers snapping, the plugin must iterate through all layers and remove (temporarily) their snapping.
 
 ### Background snapping on vertexes / segments only
 
-To achieve that result, the plugin iterates through all layers, disables their snapping, performs the snappings, and restores the snapping afterwards.
+To achieve that result, the plugin iterates through all layers, disables their snapping for vertexes, performs the snappings for segments, then reenables their snapping for vertexes, disables their snapping for segments, performs the snapping for vertexes, then reenables their snapping for segments.
 Signals are blocked during that, so that the UI is not refreshed.
 
 ### Free drawing on QgsMapCanvas
@@ -115,11 +102,12 @@ A drawback is that there is a "double cursor", the native QGIS cursor, and a Cad
 
 ### What API improvements would avoid the need of those hacks ? 
 
-- **Have QgsMapCanvas emit signals on mouseEvents **
+- **A. Have QgsMapCanvas emit signals on mouseEvents (not sure if usable for the plugin)**
 
 In current version, QgsMapCanvas emits xyCoordinates(const QgsPoint &p) on mouseMoveEvent. The same could be done for mousePressEvent and mouseReleaseEvent (maybe with better names?).
+I'm not sure this would be usable for the plugin though, since it needs to be able to modify those events too.
 
-- **Allow to input scene coordinats to QgsMapTool**
+- **B. Allow to input scene coordinats to QgsMapTool**
 
 For instance by adding `void QgsMapTool::scenePressEvent( QMouseEvent *e, QgsPoint *p )` (and the same for move and release events).
 
@@ -128,7 +116,14 @@ This could anyways be very useful for different uses (automation ?).
 
 The problem is, it seems the snapping/coordinate translation is implemented by each Tool subclass... So it will be some work !
 
-- **Allow to restrict snapping for background layers, just as there is for the active layer**
+- **C. Allow to snap to a specific layer**
+
+Add a QgsMapCanvasSnapper's snapToSpecificLayer method)
+`int snapToSpecificLayers( const QPoint& p, QList<QgsSnappingResult>& results, QgsVectorLayer layer, QgsSnapper::SnappingType snap_to, double snappingTol = -1, const QList<QgsPoint>& excludePoints = QList<QgsPoint>() );`
+ (exactly the same as snapToActiveLayer except it's not the active layer
+
+
+- **D. Allow to restrict snapping for background layers, just as there is for the active layer**
 
 Modify QgsMapCanvasSnapper's snapToBackgroundLayers method to work like snapToCurrentLayer.
 `int snapToBackgroundLayers( const QPoint& p, QList<QgsSnappingResult>& results, const QList<QgsPoint>& excludePoints = QList<QgsPoint>() );` would become 
@@ -138,7 +133,7 @@ Alternatively, QgsSnappingResult could have a field informing wheter it was a ve
 
 ### What other QGIS improvement woud make the plugin work better
 
-- **Click-drag tools should allow click-move-click input method**
+- **E. Click-drag tools should allow click-move-click input method**
 
 Some tools work in click-click mode (add feature...), but some other in click-drag mode (move vertex, ...). That second method is less common in CAD softwares, since it is less practical. Those click-drag tools work currently with the plugin, but the user must keep the mouse pressed, which is a bit annoying. Allowing click-move-click mode for those tool as well would be an improvement.
     
