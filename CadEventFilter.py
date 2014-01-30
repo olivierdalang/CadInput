@@ -40,6 +40,7 @@ class CadEventFilter(QObject):
     def __init__(self, iface, inputwidget):
         QObject.__init__(self)
         self.iface = iface
+        self.mapCanvas = iface.mapCanvas()
         self.inputwidget = inputwidget
 
         #input coordinates
@@ -52,6 +53,12 @@ class CadEventFilter(QObject):
         #snapping hack
         self.storeOtherSnapping = None #holds the layer's snapping options when snapping is suspended or None if snappig is not suspended
         self.otherSnappingStored = False
+
+        # snap layers list
+        self.snapperList = []
+        self.updateSnapperList()
+        self.mapCanvas.layersChanged.connect(self.updateSnapperList)
+        self.mapCanvas.scaleChanged.connect(self.updateSnapperList)
 
 
     ############################
@@ -347,41 +354,21 @@ class CadEventFilter(QObject):
         if none, we simply map the point to the scene
         """
 
-        #1) Snap on current layer vertex
-        snapper = QgsMapCanvasSnapper(self.iface.mapCanvas())
-        (reval, snapped) = snapper.snapToCurrentLayer(qpoint,QgsSnapper.SnapToVertex)
-        if snapped != []:
-            point = QgsPoint(snapped[0].snappedVertex.x(), snapped[0].snappedVertex.y())
-            return (point, None)
+        if len(self.snapperList) == 0:
+            return None, None
 
-        #2) Snap on background vertex
-        self.disableBackgroundSnapping('vertex')        
-        (reval, snapped) = snapper.snapToBackgroundLayers(qpoint)
-        self.restoreBackgroundSnapping()
-        if snapped != []:
-            point = QgsPoint(snapped[0].snappedVertex.x(), snapped[0].snappedVertex.y())
-            return (point, None)
-
-        #3) Snap on current layer segments
-        snapper = QgsMapCanvasSnapper(self.iface.mapCanvas())
-        (reval, snapped) = snapper.snapToCurrentLayer(qpoint,QgsSnapper.SnapToSegment)
-        if snapped != []:
-            point = QgsPoint(snapped[0].snappedVertex.x(), snapped[0].snappedVertex.y())
-            prevPoint = QgsPoint(snapped[0].beforeVertex.x(), snapped[0].beforeVertex.y())
-            afterPoint = QgsPoint(snapped[0].afterVertex.x(), snapped[0].afterVertex.y())
-            return (None, (point,prevPoint,afterPoint))
-
-        #4) Snap on background segments
-        self.disableBackgroundSnapping('segment')        
-        (reval, snapped) = snapper.snapToBackgroundLayers(qpoint)
-        self.restoreBackgroundSnapping()
-        if snapped != []:
-            point = QgsPoint(snapped[0].snappedVertex.x(), snapped[0].snappedVertex.y())
-            prevPoint = QgsPoint(snapped[0].beforeVertex.x(), snapped[0].beforeVertex.y())
-            afterPoint = QgsPoint(snapped[0].afterVertex.x(), snapped[0].afterVertex.y())
-            return (None, (point,prevPoint,afterPoint))
-
-        return (None, None)
+        snapper = QgsSnapper(self.mapCanvas.mapRenderer())
+        snapper.setSnapLayers(self.snapperList)
+        snapper.setSnapMode(QgsSnapper.SnapWithResultsWithinTolerances)
+        ok, snappingResults = snapper.snapPoint(qpoint, [])
+        for result in snappingResults:
+            if result.snappedVertexNr != -1:
+                return QgsPoint(result.snappedVertex), None
+        if len(snappingResults):
+            output = (QgsPoint(snappingResults[0].snappedVertex), QgsPoint(snappingResults[0].beforeVertex), QgsPoint(snappingResults[0].afterVertex))
+            return None, output
+        else:
+            return None, None
 
     def _toPixels(self, qgspoint):
         """
@@ -393,6 +380,30 @@ class CadEventFilter(QObject):
         except ValueError:
             #this happens sometimes at loading, it seems the mapCanvas is not ready and returns a point at NaN;NaN
             return QPoint()
+
+
+    def updateSnapperList(self, dummy=None):
+        self.snapperList = []
+        scale = self.iface.mapCanvas().mapRenderer().scale()
+        layers = self.iface.mapCanvas().layers()
+        curLayer = self.iface.legendInterface().currentLayer()
+        if curLayer is not None:
+            curLayerId = curLayer.id()
+        else:
+            curLayerId = ""
+        for layer in layers:
+            if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType():
+                if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
+                    snapLayer = QgsSnapper.SnapLayer()
+                    snapLayer.mLayer = layer
+                    snapLayer.mSnapTo = QgsSnapper.SnapToVertexAndSegment
+                    snapLayer.mTolerance = 20
+                    snapLayer.mUnitType = QgsTolerance.Pixels
+                    # put current layer on top
+                    if layer.id() == curLayerId:
+                        self.snapperList.insert(0, snapLayer)
+                    else:
+                        self.snapperList.append(snapLayer)
 
 
     #########################
@@ -407,7 +418,7 @@ class CadEventFilter(QObject):
         activeLayer = self.iface.activeLayer()
 
         #store and remove all the snapping options
-        self.disableBackgroundSnapping()
+        #self.disableBackgroundSnapping()
 
         try:
             provider = self.memoryLayer.dataProvider()
@@ -430,6 +441,7 @@ class CadEventFilter(QObject):
         self.memoryLayer.updateExtents()
 
         self.iface.setActiveLayer(activeLayer)
+
     def removeSnappingPoint(self):
         """
         This methods empties the snapping layer.
@@ -449,7 +461,7 @@ class CadEventFilter(QObject):
 
 
         #restore the snapping options
-        self.restoreBackgroundSnapping()
+        #self.restoreBackgroundSnapping()
 
     def disableBackgroundSnapping(self, keepSnapping=None):
         """
@@ -475,6 +487,7 @@ class CadEventFilter(QObject):
                     QgsProject.instance().setSnapSettingsForLayer(layer.id(),False,0,0,0,False)
 
             QgsProject.instance().blockSignals(False) #we don't want to refresh the snapping UI
+
     def restoreBackgroundSnapping(self):
         """
         Restores previously stored snapping options
@@ -500,4 +513,6 @@ class CadEventFilter(QObject):
             layer = QgsMapLayerRegistry.instance().mapLayers()[name]
             if layer.name() == layernameToClean:
                 QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
+
+
 
