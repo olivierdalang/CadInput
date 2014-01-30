@@ -359,14 +359,14 @@ class CadEventFilter(QObject):
 
         snapper = QgsSnapper(self.mapCanvas.mapRenderer())
         snapper.setSnapLayers(self.snapperList)
-        snapper.setSnapMode(QgsSnapper.SnapWithOneResult)
+        snapper.setSnapMode(QgsSnapper.SnapWithResultsWithinTolerances)
         ok, snappingResults = snapper.snapPoint(qpoint, [])
-        if ok == 0 and len(snappingResults) > 0:
-            if snappingResults[0].snappedVertexNr != -1:
-                return snappingResults[0].snappedVertex, None
-            else:
-                output = (snappingResults[0].snappedVertex, snappingResults[0].beforeVertex, snappingResults[0].afterVertex)
-                return None, output
+        for result in snappingResults:
+            if result.snappedVertexNr != -1:
+                return QgsPoint(result.snappedVertex), None
+        if len(snappingResults):
+            output = (QgsPoint(snappingResults[0].snappedVertex), QgsPoint(snappingResults[0].beforeVertex), QgsPoint(snappingResults[0].afterVertex))
+            return None, output
         else:
             return None, None
 
@@ -396,7 +396,7 @@ class CadEventFilter(QObject):
                 if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
                     snapLayer = QgsSnapper.SnapLayer()
                     snapLayer.mLayer = layer
-                    snapLayer.mSnapTo = QgsSnapper. SnapToVertexAndSegment
+                    snapLayer.mSnapTo = QgsSnapper.SnapToVertexAndSegment
                     snapLayer.mTolerance = 20
                     snapLayer.mUnitType = QgsTolerance.Pixels
                     # put current layer on top
