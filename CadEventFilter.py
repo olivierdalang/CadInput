@@ -55,10 +55,39 @@ class CadEventFilter(QObject):
         self.otherSnappingStored = False
 
         # snap layers list
-        self.snapperList = []
-        self.updateSnapperList()
-        self.mapCanvas.layersChanged.connect(self.updateSnapperList)
-        self.mapCanvas.scaleChanged.connect(self.updateSnapperList)
+        self.snapper = None # the snapper used to get snapped points from the map canvas
+        self.updateSnapper()
+        self.mapCanvas.layersChanged.connect(self.updateSnapper)
+        self.mapCanvas.scaleChanged.connect(self.updateSnapper)
+
+    def updateSnapper(self):
+        """
+            Updates self.snapper to take into consideration layers changes, layers not displayed because of the scale *TODO* and the user's input */TODO*
+            @note : it's a shame we can't get QgsMapCanvasSnapper().mSnapper which would replace all code below (I guess)
+        """
+
+        snapperList = []
+        scale = self.iface.mapCanvas().mapRenderer().scale()
+        curLayer = self.iface.legendInterface().currentLayer()
+        layers = self.iface.mapCanvas().layers()
+        for layer in layers:
+            if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType():
+                if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
+                    # TODO : use user snap settings for those layers rather than just activating all the points
+                    snapLayer = QgsSnapper.SnapLayer()
+                    snapLayer.mLayer = layer
+                    snapLayer.mSnapTo = QgsSnapper.SnapToVertexAndSegment
+                    snapLayer.mTolerance = 20
+                    snapLayer.mUnitType = QgsTolerance.Pixels
+                    # put current layer on top
+                    if layer is curLayer:
+                        snapperList.insert(0, snapLayer)
+                    else:
+                        snapperList.append(snapLayer)
+
+        self.snapper = QgsSnapper(self.mapCanvas.mapRenderer())
+        self.snapper.setSnapLayers(snapperList)
+        self.snapper.setSnapMode(QgsSnapper.SnapWithResultsWithinTolerances)
 
 
     ############################
@@ -341,26 +370,8 @@ class CadEventFilter(QObject):
         """
         returns the current snapped point (if any) and the current snapped segment (if any) in map coordinates
         The current snapped segment is returned as (snapped point on segment, startPoint, endPoint)
-
-        We will :
-        1) check if this snaps on a point of the current layer, if not :
-        2) check if this snaps on a point of a background layer, if not :
-        3) check if this snaps on a segment of the current layer, if not :
-        4) check if this snaps on a segment of the background layer
-
-        if 1 or 2) we, snap to that point, and set the segment to None
-        if 3 or 4) we, we snap to that segment, and set the segment for advanced snap (if another constraint is set)
-
-        if none, we simply map the point to the scene
         """
-
-        if len(self.snapperList) == 0:
-            return None, None
-
-        snapper = QgsSnapper(self.mapCanvas.mapRenderer())
-        snapper.setSnapLayers(self.snapperList)
-        snapper.setSnapMode(QgsSnapper.SnapWithResultsWithinTolerances)
-        ok, snappingResults = snapper.snapPoint(qpoint, [])
+        ok, snappingResults = self.snapper.snapPoint(qpoint, [])
         for result in snappingResults:
             if result.snappedVertexNr != -1:
                 return QgsPoint(result.snappedVertex), None
@@ -382,28 +393,6 @@ class CadEventFilter(QObject):
             return QPoint()
 
 
-    def updateSnapperList(self, dummy=None):
-        self.snapperList = []
-        scale = self.iface.mapCanvas().mapRenderer().scale()
-        layers = self.iface.mapCanvas().layers()
-        curLayer = self.iface.legendInterface().currentLayer()
-        if curLayer is not None:
-            curLayerId = curLayer.id()
-        else:
-            curLayerId = ""
-        for layer in layers:
-            if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType():
-                if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
-                    snapLayer = QgsSnapper.SnapLayer()
-                    snapLayer.mLayer = layer
-                    snapLayer.mSnapTo = QgsSnapper.SnapToVertexAndSegment
-                    snapLayer.mTolerance = 20
-                    snapLayer.mUnitType = QgsTolerance.Pixels
-                    # put current layer on top
-                    if layer.id() == curLayerId:
-                        self.snapperList.insert(0, snapLayer)
-                    else:
-                        self.snapperList.append(snapLayer)
 
 
     #########################
