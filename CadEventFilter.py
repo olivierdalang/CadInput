@@ -67,8 +67,6 @@ class CadEventFilter(QObject):
             Updates self.snapper to take into consideration layers changes, layers not displayed because of the scale *TODO* and the user's input */TODO*
             @note : it's a shame we can't get QgsMapCanvasSnapper().mSnapper which would replace all code below (I guess)
         """
-        QgsMessageLog.logMessage("Snapper update","CadInput")
-
         snapperList = []
         scale = self.iface.mapCanvas().mapRenderer().scale()
         curLayer = self.iface.legendInterface().currentLayer()

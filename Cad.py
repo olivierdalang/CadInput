@@ -41,8 +41,7 @@ class Cad(QObject):
         self.iface = iface
 
     def initGui(self):
-        QgsMessageLog.logMessage("init","CadInputTest")
-
+        #QgsMessageLog.logMessage("CadInput is being initialized","CadInput")
         
         # CadInputWidget : this widget displays the inputs allowing numerical entry
         self.inputwidget = CadInputWidget(self.iface)

@@ -35,7 +35,7 @@ Shortcuts are accessible if the MapCanvas or the CadInputWidget have focus :
 ## Known issues
 
 - A CRS Prompt will appear at first use of the tool if "use default CRS for new layers" is not set in the options.
-- The snapping radius of the tool is hard coded to 20. The best is to set your radius to 20 too so it's more usable.
+- Changed snap settings will only have effect upon rescale or adding layers (will be solved with issue http://hub.qgis.org/issues/9465 )
 - The first point when activating is based upon the 0,0 point rather than last click (will be fixed when there's a CanvasClicked signal)
 - ...
 
@@ -58,7 +58,7 @@ Or send me some feedback at : olivier.dalang@gmail.com
 
 ### Features planned
 
-- [ ] incremental values lock (for instance 30°, or 10m grid)
+- [ ] incremental values lock (for instance 30def, or 10m grid)
 - [ ] set origin (for absolute mode with custom origin)
 - [ ] intersection of segments / having segments as a true constraint (not only for parralel/perpendicular)
 - [ ] intersection of arcs / having arcs as a true constraint (not only for parralel/perpendicular)
@@ -94,7 +94,7 @@ To be able to capture the mouseEvents of the MapCanvas, the plugin installs an e
 Capturing and editing the mouseEvents is fine for graphical feedback, but does not allow for precise input (since mouseEvents are in pixels, and not in map units).
 To workaround this limitation, the plugin creates a memory layer, in which a point is created each time a precise coordinate input is needed, to which the native tools will snap. Unfortunately, to snap to this layer only without possible interference from other regular layers snapping, the plugin must iterate through all layers and remove (temporarily) their snapping.
 
-### Background snapping on vertexes / segments only
+### Background snapping on vertexes / segments only (useful to implement better snap priority)
 
 To achieve that result, the plugin iterates through all layers, disables their snapping for vertexes, performs the snappings for segments, then reenables their snapping for vertexes, disables their snapping for segments, performs the snapping for vertexes, then reenables their snapping for segments.
 Signals are blocked during that, so that the UI is not refreshed.
@@ -113,32 +113,44 @@ I'm not sure this would be usable for the plugin though, since it needs to be ab
 
 - **B. Allow to input scene coordinats to QgsMapTool**
 
-For instance by adding `void QgsMapTool::scenePressEvent( QMouseEvent *e, QgsPoint *p )` (and the same for move and release events).
+For instance by adding 
+
+    void QgsMapTool::scenePressEvent( QMouseEvent *e, QgsPoint *p ) // and the same for move and release events
 
 Or by adding an optional `scenePos *pos=0` parameter to the existing `void QgsMapTool::canvasPressEvent( QMouseEvent *e )`
 This could anyways be very useful for different uses (automation ?).
 
 The problem is, it seems the snapping/coordinate translation is implemented by each Tool subclass... So it will be some work !
 
-- **C. Allow to snap to a specific layer**
+- **C. Allow to snap to a specific layer (useless if F is done)**
 
-Add a QgsMapCanvasSnapper's snapToSpecificLayer method)
-`int snapToSpecificLayers( const QPoint& p, QList<QgsSnappingResult>& results, QgsVectorLayer layer, QgsSnapper::SnappingType snap_to, double snappingTol = -1, const QList<QgsPoint>& excludePoints = QList<QgsPoint>() );`
- (exactly the same as snapToActiveLayer except it's not the active layer
+Add a QgsMapCanvasSnapper's snapToSpecificLayer method (exactly the same as snapToActiveLayer except it's not the active layer)
+
+    int snapToSpecificLayers( const QPoint& p, QList<QgsSnappingResult>& results, QgsVectorLayer layer, QgsSnapper::SnappingType snap_to, double snappingTol = -1, const QList<QgsPoint>& excludePoints = QList<QgsPoint>() );
 
 
-- **D. Allow to restrict snapping for background layers, just as there is for the active layer**
+
+- **D. Allow to restrict snapping for background layers, just as there is for the active layer (useless if F is done)**
 
 Modify QgsMapCanvasSnapper's snapToBackgroundLayers method to work like snapToCurrentLayer.
-`int snapToBackgroundLayers( const QPoint& p, QList<QgsSnappingResult>& results, const QList<QgsPoint>& excludePoints = QList<QgsPoint>() );` would become 
-`int snapToBackgroundLayers( const QPoint& p, QList<QgsSnappingResult>& results, QgsSnapper::SnappingType snap_to, double snappingTol = -1, const QList<QgsPoint>& excludePoints = QList<QgsPoint>() );`
+
+    int snapToBackgroundLayers( const QPoint& p, QList<QgsSnappingResult>& results, const QList<QgsPoint>& excludePoints = QList<QgsPoint>() );
+
+would become 
+
+    int snapToBackgroundLayers( const QPoint& p, QList<QgsSnappingResult>& results, QgsSnapper::SnappingType snap_to, double snappingTol = -1, const QList<QgsPoint>& excludePoints = QList<QgsPoint>() );
 
 Alternatively, QgsSnappingResult could have a field informing wheter it was a vertex or a segment snap.
+
 
 ### What other QGIS improvement woud make the plugin work better
 
 - **E. Click-drag tools should allow click-move-click input method**
 
 Some tools work in click-click mode (add feature...), but some other in click-drag mode (move vertex, ...). That second method is less common in CAD softwares, since it is less practical. Those click-drag tools work currently with the plugin, but the user must keep the mouse pressed, which is a bit annoying. Allowing click-move-click mode for those tool as well would be an improvement.
+
+- **F. Improve snap priority **
+
+See http://hub.qgis.org/issues/7058
     
 
