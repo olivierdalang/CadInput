@@ -55,16 +55,19 @@ class CadEventFilter(QObject):
         self.otherSnappingStored = False
 
         # snap layers list
-        self.snapper = None # the snapper used to get snapped points from the map canvas
+        self.snapper = None # the snapper used to get snapped points from the map canvas. We can't use 
         self.updateSnapper()
         self.mapCanvas.layersChanged.connect(self.updateSnapper)
         self.mapCanvas.scaleChanged.connect(self.updateSnapper)
+        QgsProject.instance().readProject.connect(self.updateSnapper)
+        QgsProject.instance().snapSettingsChanged.connect(self.updateSnapper) # TODO : does not work ! see http://hub.qgis.org/issues/9465
 
     def updateSnapper(self):
         """
             Updates self.snapper to take into consideration layers changes, layers not displayed because of the scale *TODO* and the user's input */TODO*
             @note : it's a shame we can't get QgsMapCanvasSnapper().mSnapper which would replace all code below (I guess)
         """
+        QgsMessageLog.logMessage("Snapper update","CadInput")
 
         snapperList = []
         scale = self.iface.mapCanvas().mapRenderer().scale()
@@ -73,12 +76,14 @@ class CadEventFilter(QObject):
         for layer in layers:
             if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType():
                 if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
-                    # TODO : use user snap settings for those layers rather than just activating all the points
+                    (layerid, enabled, snapType, tolUnits, tol, avoidInt) = QgsProject.instance().snapSettingsForLayer(layer.id())                    
+                    if not enabled:
+                        continue
                     snapLayer = QgsSnapper.SnapLayer()
                     snapLayer.mLayer = layer
-                    snapLayer.mSnapTo = QgsSnapper.SnapToVertexAndSegment
-                    snapLayer.mTolerance = 20
-                    snapLayer.mUnitType = QgsTolerance.Pixels
+                    snapLayer.mSnapTo = snapType
+                    snapLayer.mTolerance = tol
+                    snapLayer.mUnitType = tolUnits
                     # put current layer on top
                     if layer is curLayer:
                         snapperList.insert(0, snapLayer)
