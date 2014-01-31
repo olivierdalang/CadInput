@@ -76,6 +76,9 @@ Please submit your ideas on the tracker : https://github.com/olivierdalang/CadIn
 ## Version history
 
 - 2014-01-29 - version 0.3 : intial experimental release
+- 2014-01-31 - version 0.4 : 
+    - improved performances on more complex files (thanks 3nids)
+    - snapping preferences now taken into account)
 
 ## Technical notes
 
@@ -94,11 +97,6 @@ To be able to capture the mouseEvents of the MapCanvas, the plugin installs an e
 Capturing and editing the mouseEvents is fine for graphical feedback, but does not allow for precise input (since mouseEvents are in pixels, and not in map units).
 To workaround this limitation, the plugin creates a memory layer, in which a point is created each time a precise coordinate input is needed, to which the native tools will snap. Unfortunately, to snap to this layer only without possible interference from other regular layers snapping, the plugin must iterate through all layers and remove (temporarily) their snapping.
 
-### Background snapping on vertexes / segments only (useful to implement better snap priority)
-
-To achieve that result, the plugin iterates through all layers, disables their snapping for vertexes, performs the snappings for segments, then reenables their snapping for vertexes, disables their snapping for segments, performs the snapping for vertexes, then reenables their snapping for segments.
-Signals are blocked during that, so that the UI is not refreshed.
-
 ### Free drawing on QgsMapCanvas
 To be able to freely draw on the MapCanvas, the plugin adds a QWidget as child of the mapCanvas.
 A drawback is that there is a "double cursor", the native QGIS cursor, and a CadInput-specific cursor, inducing a little bit of confusion.
@@ -111,7 +109,7 @@ A drawback is that there is a "double cursor", the native QGIS cursor, and a Cad
 In current version, QgsMapCanvas emits xyCoordinates(const QgsPoint &p) on mouseMoveEvent. The same could be done for mousePressEvent and mouseReleaseEvent (maybe with better names?).
 I'm not sure this would be usable for the plugin though, since it needs to be able to modify those events too.
 
-- **B. Allow to input scene coordinats to QgsMapTool**
+- **B. Allow to input scene coordinats to QgsMapTool (long term)**
 
 For instance by adding 
 
@@ -120,7 +118,7 @@ For instance by adding
 Or by adding an optional `scenePos *pos=0` parameter to the existing `void QgsMapTool::canvasPressEvent( QMouseEvent *e )`
 This could anyways be very useful for different uses (automation ?).
 
-The problem is, it seems the snapping/coordinate translation is implemented by each Tool subclass... So it will be some work !
+The problem is, it seems the snapping/coordinate translation is implemented by each Tool subclass... So it will be some work which would require anyway a more general MapTools refactoring !
 
 - **C. Allow to snap to a specific layer (useless if F is done)**
 
