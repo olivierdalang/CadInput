@@ -457,7 +457,7 @@ class CadEventFilter(QObject):
         #restore the snapping options
         self.restoreBackgroundSnapping()
 
-    def disableBackgroundSnapping(self, keepSnapping=None):
+    def disableBackgroundSnapping(self):
         """
         Stores (for latter restoring) and then remove all the snapping options.
         """
@@ -469,15 +469,10 @@ class CadEventFilter(QObject):
             self.otherSnappingStored = True
             QgsProject.instance().blockSignals(True) #we don't want to refresh the snapping UI
             self.storeOtherSnapping = dict()
-            for name in QgsMapLayerRegistry.instance().mapLayers():
-                layer = QgsMapLayerRegistry.instance().mapLayers()[name]
-                self.storeOtherSnapping[layer.id()] = QgsProject.instance().snapSettingsForLayer(layer.id())
-
-                if keepSnapping=='vertex':
-                    QgsProject.instance().setSnapSettingsForLayer(layer.id(),True,QgsSnapper.SnapToVertex, QgsTolerance.Pixels, 20,False)
-                elif keepSnapping=='segment':
-                    QgsProject.instance().setSnapSettingsForLayer(layer.id(),True,QgsSnapper.SnapToSegment, QgsTolerance.Pixels, 20,False)
-                else:
+            layers = self.iface.mapCanvas().layers()
+            for layer in layers:
+                if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType():
+                    self.storeOtherSnapping[layer.id()] = QgsProject.instance().snapSettingsForLayer(layer.id())
                     QgsProject.instance().setSnapSettingsForLayer(layer.id(),False,0,0,0,False)
 
             QgsProject.instance().blockSignals(False) #we don't want to refresh the snapping UI
