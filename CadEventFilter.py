@@ -418,7 +418,7 @@ class CadEventFilter(QObject):
         activeLayer = self.iface.activeLayer()
 
         #store and remove all the snapping options
-        #self.disableBackgroundSnapping()
+        self.disableBackgroundSnapping()
 
         try:
             provider = self.memoryLayer.dataProvider()
@@ -461,7 +461,7 @@ class CadEventFilter(QObject):
 
 
         #restore the snapping options
-        #self.restoreBackgroundSnapping()
+        self.restoreBackgroundSnapping()
 
     def disableBackgroundSnapping(self, keepSnapping=None):
         """
