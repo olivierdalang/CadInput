@@ -211,11 +211,7 @@ class CadEventFilter(QObject):
 
                 p3.setY( y )
 
-        else:
-            if self.inputwidget.rx:
-                self.inputwidget.x = p3.x()-self.p2.x()
-            else:
-                self.inputwidget.x = p3.x()
+        
 
         #Y
         if self.inputwidget.ly:
@@ -243,11 +239,6 @@ class CadEventFilter(QObject):
                     x = x1+(dx * (y-y1) ) / dy
 
                 p3.setX( x )
-        else:
-            if self.inputwidget.ry:
-                self.inputwidget.y = p3.y()-self.p2.y()
-            else:
-                self.inputwidget.y = p3.y()
 
         #A
         dx =  p3.x()-self.p2.x()
@@ -280,13 +271,6 @@ class CadEventFilter(QObject):
                 if l1.intersect(l2, intP) == QLineF.UnboundedIntersection and not (ang < t or ang > 360-t or (ang > 180-t and ang < 180+t) ):
                     p3.setX( intP.x() )
                     p3.setY( intP.y() )
-
-        else:
-            if self.inputwidget.ra:
-                lastA = math.atan2(self.p2.y() - self.p1.y(), self.p2.x() - self.p1.x())
-                self.inputwidget.a = (math.atan2( dy, dx )-lastA)/math.pi*180
-            else:
-                self.inputwidget.a = math.atan2( dy, dx )/math.pi*180
 
 
 
@@ -342,8 +326,26 @@ class CadEventFilter(QObject):
                         p3.setY( ay )
                 
                 
+
+
+        #Update the widget's values
+        if self.inputwidget.rx:
+            self.inputwidget.x = p3.x()-self.p2.x()
         else:
-            self.inputwidget.d = math.sqrt( dx*dx + dy*dy )
+            self.inputwidget.x = p3.x()
+
+        if self.inputwidget.ry:
+            self.inputwidget.y = p3.y()-self.p2.y()
+        else:
+            self.inputwidget.y = p3.y()
+        
+        if self.inputwidget.ra:
+            lastA = math.atan2(self.p2.y() - self.p1.y(), self.p2.x() - self.p1.x())
+            self.inputwidget.a = (math.atan2( dy, dx )-lastA)/math.pi*180
+        else:
+            self.inputwidget.a = math.atan2( dy, dx )/math.pi*180
+
+        self.inputwidget.d = math.sqrt( dx*dx + dy*dy )
 
         return p3
     def _alignToSegment(self):
