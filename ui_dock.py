@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_dock.ui'
 #
-# Created: Tue Feb  4 13:45:33 2014
+# Created: Wed Feb  5 08:43:31 2014
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -69,16 +69,12 @@ class Ui_CadInputDock(object):
         self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
         self.gridLayout_2 = QtGui.QGridLayout()
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
-        self.relD = QtGui.QToolButton(self.dockWidgetContents)
+        self.relA = QtGui.QToolButton(self.dockWidgetContents)
         icon4 = QtGui.QIcon()
         icon4.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/cadinput/resources/delta.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.relD.setIcon(icon4)
-        self.relD.setCheckable(True)
-        self.relD.setObjectName(_fromUtf8("relD"))
-        self.gridLayout_2.addWidget(self.relD, 0, 0, 1, 1)
-        self.relA = QtGui.QToolButton(self.dockWidgetContents)
         self.relA.setIcon(icon4)
         self.relA.setCheckable(True)
+        self.relA.setChecked(True)
         self.relA.setObjectName(_fromUtf8("relA"))
         self.gridLayout_2.addWidget(self.relA, 1, 0, 1, 1)
         self.relY = QtGui.QToolButton(self.dockWidgetContents)
@@ -159,7 +155,6 @@ class Ui_CadInputDock(object):
         self.widPer.setText(_translate("CadInputDock", "...", None))
         self.widPar.setToolTip(_translate("CadInputDock", "Parallel", None))
         self.widPar.setText(_translate("CadInputDock", "...", None))
-        self.relD.setText(_translate("CadInputDock", "...", None))
         self.relA.setText(_translate("CadInputDock", "...", None))
         self.relY.setText(_translate("CadInputDock", "...", None))
         self.relX.setText(_translate("CadInputDock", "...", None))

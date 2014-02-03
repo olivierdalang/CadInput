@@ -104,6 +104,9 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
         self.widX.installEventFilter(self.linEditFilter)
         self.widY.installEventFilter(self.linEditFilter)
 
+        # not point at start, do not allow setting constraints
+        self.enableConstraints(0)
+
         # And finally add to the MainWindow
         self.iface.mainWindow().addDockWidget(Qt.LeftDockWidgetArea, self)
 
@@ -188,6 +191,35 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
         self.active = (self.iface.mapCanvas().mapTool() is not None and self.iface.mapCanvas().mapTool().isEditTool())
 
 
+    def enableConstraints(self, pointCount, previousCount=None):
+        if previousCount is not None and ( previousCount == pointCount or previousCount >= 3 and pointCount >= 3):
+            # do not trigger UI changes if nothing changed
+            return
+
+        # relative coordinatesonly available with 1 previous point
+        self.relX.setEnabled(pointCount>=2)
+        self.relY.setEnabled(pointCount>=2)
+        # uncheck relative if there is not enough point
+        if pointCount < 2:
+            self.relX.setChecked(False)
+            self.relY.setChecked(False)
+
+        # absolute angle only possible with 1 previous point
+        self.widA.setEnabled(pointCount>=2)
+        self.lockA.setEnabled(pointCount>=2)
+        # relative angle only available with 2 previous point
+        self.relA.setEnabled(pointCount>=3)
+        # uncheck relative if there is not enough point
+        if pointCount < 3:
+            self.relA.setChecked(False)
+        if previousCount == 2 and pointCount == 3:
+            # we we can have relative angle, set checked by default
+            self.relA.setChecked(True)
+
+        # relative distance only available with 1 previous point
+        self.widD.setEnabled(pointCount>=2)
+        self.lockD.setEnabled(pointCount>=2)
+
 
     """
     Those properties are just to lighten the code in CadEventFilter
@@ -216,38 +248,38 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
 
     #Lock properties
     @property
-    def lx(self): return self.lockX.isChecked()
+    def lx(self): return self.lockX.isEnabled() and self.lockX.isChecked()
     @lx.setter
     def lx(self, value): self.lockX.setChecked(value)
 
     @property
-    def ly(self): return self.lockY.isChecked()
+    def ly(self): return self.lockY.isEnabled() and self.lockY.isChecked()
     @ly.setter
     def ly(self, value): self.lockY.setChecked(value)
 
     @property
-    def la(self): return self.lockA.isChecked()
+    def la(self): return self.lockA.isEnabled() and self.lockA.isChecked()
     @la.setter
     def la(self, value): self.lockA.setChecked(value)
 
     @property
-    def ld(self): return self.lockD.isChecked()
+    def ld(self): return self.lockD.isEnabled() and self.lockD.isChecked()
     @ld.setter
     def ld(self, value): self.lockD.setChecked(value)
 
     #Relative properties
     @property
-    def rx(self): return self.relX.isChecked()
+    def rx(self): return self.relX.isEnabled() and self.relX.isChecked()
     @rx.setter
     def rx(self, value): self.relX.setChecked(value)
 
     @property
-    def ry(self): return self.relY.isChecked()
+    def ry(self): return self.relY.isEnabled() and self.relY.isChecked()
     @ry.setter
     def ry(self, value): self.relY.setChecked(value)
 
     @property
-    def ra(self): return self.relA.isChecked()
+    def ra(self): return self.relA.isEnabled() and  self.relA.isChecked()
     @ra.setter
     def ra(self, value): self.relA.setChecked(value)
 
@@ -255,6 +287,8 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
     def rd(self): return True
     @rd.setter
     def rd(self, value): raise Exception
+
+
 
     #Misc properties
     @property
