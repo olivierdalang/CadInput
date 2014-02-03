@@ -25,7 +25,7 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 
-import resources
+import resources_rc
 
 from CadInputWidget import CadInputWidget
 from CadEventFilter import CadEventFilter

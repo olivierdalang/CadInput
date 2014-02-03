@@ -4,7 +4,16 @@
         <file>resources/delta.png</file>
     </qresource>
     <qresource prefix="/plugins/cadinput">
-        <file>resources/lock.png</file>
+        <file>resources/lock.svg</file>
+    </qresource>
+    <qresource prefix="/plugins/cadinput">
+        <file>resources/pen.svg</file>
+    </qresource>
+     <qresource prefix="/plugins/cadinput">
+        <file>resources/perpendicular.svg</file>
+    </qresource>
+     <qresource prefix="/plugins/cadinput">
+        <file>resources/parallel.svg</file>
     </qresource>
     <qresource prefix="/plugins/cadinput">
         <file>resources/about.png</file>

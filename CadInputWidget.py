@@ -20,24 +20,44 @@
  ***************************************************************************/
 """
 # Import the PyQt and QGIS libraries
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from qgis.core import *
-from qgis.gui import *
-
-import resources
-import math
 import ast
 import operator as op
 
-class CadInputWidget(QDockWidget):
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+
+from ui_dock import Ui_CadInputDock
+
+
+class LineEditFitler(QObject):
+    """
+    This class allows for internal shortcuts inside QLineEdit when they are being edited.
+    """
+    def __init__(self, cadInput):
+        QObject.__init__(self)
+        self.cadInput = cadInput
+
+    def eventFilter(self, obj, event):
+        if event.type() != QEvent.KeyPress:
+            # execute the event
+            return False
+        obj.textEdited.emit(obj.text())
+        self.cadInput.keyPressEvent(event)
+        if event.isAccepted():
+            # the event is intercepted, do not execute
+            return True
+        # nothing intercepted, execute the event (=> will write the text)
+        return False
+
+
+class CadInputWidget(QDockWidget, Ui_CadInputDock):
     """
     This is CadInput's main GUI widget. It displays the edit fields for entering numerical coordinates.
     """
 
-   
     def __init__(self, iface):
-        QWidget.__init__(self)
+        QDockWidget.__init__(self)
+        self.setupUi(self)
 
         self.iface = iface
 
@@ -49,109 +69,6 @@ class CadInputWidget(QDockWidget):
 
         # And we run it so it sets the right state upon loading
         self.maptoolChanged()
-
-
-        # Create the enable action
-        self.enableAction = QAction( QIcon(":/plugins/cadinput/resources/icon.png"), u"Enable", self.iface.mainWindow())
-        self.enableAction.setCheckable(True)
-
-        # Create the widgets
-
-        ## Load the images
-        lockPixmap = QPixmap(":/plugins/cadinput/resources/lock.png")
-        lockIcon = QIcon( lockPixmap )
-        deltaPixmap = QPixmap(":/plugins/cadinput/resources/delta.png")
-        deltaIcon = QIcon(  deltaPixmap )
-
-        ## General
-
-        self.widEnab = QToolButton()
-        self.widEnab.setDefaultAction( self.enableAction )
-        self.widEnab.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-
-        self.widC = QToolButton()
-        self.widC.setText("construction")
-        self.widC.setCheckable(True)
-        self.widC.setToolTip("C")
-
-        self.widPar = QToolButton()
-        self.widPar.setText("parralel")
-        self.widPar.setCheckable(True)
-        self.widPar.setToolTip("P")
-
-        self.widPer = QToolButton()
-        self.widPer.setText("perpendicular")
-        self.widPer.setCheckable(True)
-        self.widPer.setToolTip("P")
-
-        ## Angular
-        self.relD = QToolButton()
-        self.relD.setIcon(deltaIcon)
-        self.relD.setFixedSize(24,24)
-        self.relD.setCheckable(True)
-        self.relD.setChecked(False)
-        self.relD.setEnabled(False)
-
-        self.widD = QLineEditWithShortcut(self)
-        self.widD.setToolTip("D")
-        
-        self.lockD = QToolButton()
-        self.lockD.setIcon(lockIcon)
-        self.lockD.setFixedSize(24,24)
-        self.lockD.setCheckable(True)
-        self.lockD.setToolTip("Alt+D or Ctrl+A")
-
-        self.relA = QToolButton()
-        self.relA.setIcon(deltaIcon)
-        self.relA.setFixedSize(24,24)
-        self.relA.setCheckable(True)
-        self.relA.setChecked(True)
-        self.relA.setToolTip("Shift+A")
-
-        self.widA = QLineEditWithShortcut(self)
-        self.widA.setToolTip("A")
-
-        self.lockA = QToolButton()
-        self.lockA.setIcon(lockIcon)
-        self.lockA.setFixedSize(24,24)
-        self.lockA.setCheckable(True)
-        self.lockA.setToolTip("Alt+A or Ctrl+A")
-
-        ## Cartesian
-
-        self.relX = QToolButton()
-        self.relX.setIcon(deltaIcon)
-        self.relX.setFixedSize(24,24)
-        self.relX.setCheckable(True)
-        self.relX.setChecked(True)
-        self.relX.setToolTip("Shift+X")
-
-        self.widX = QLineEditWithShortcut(self)
-        self.widX.setToolTip("X")
-
-        self.lockX = QToolButton()
-        self.lockX.setIcon(lockIcon)
-        self.lockX.setFixedSize(24,24)
-        self.lockX.setCheckable(True)
-        self.lockX.setToolTip("Alt+X or Ctrl+A")
-
-        self.relY = QToolButton()
-        self.relY.setIcon(deltaIcon)
-        self.relY.setFixedSize(24,24)
-        self.relY.setCheckable(True)
-        self.relY.setChecked(True)
-        self.relY.setToolTip("Shift+Y")
-
-        self.widY = QLineEditWithShortcut(self)
-        self.widY.setToolTip("Y")
-
-        self.lockY = QToolButton()
-        self.lockY.setIcon(lockIcon)
-        self.lockY.setFixedSize(24,24)
-        self.lockY.setCheckable(True)
-        self.lockY.setToolTip("Alt+Y or Ctrl+A")
-
-
 
         # Connect the signals
 
@@ -179,52 +96,15 @@ class CadInputWidget(QDockWidget):
         self.widPar.toggled.connect(lambda state: disableIfEnabled(state,self.widPer))
         self.widPer.toggled.connect(lambda state: disableIfEnabled(state,self.widPar))
 
+        self.widEnab.setDefaultAction(self.enableAction)
 
-
-        # Layout the widgets
-        gridLayout = QGridLayout() 
-
-        r=0
-        sublayout = QHBoxLayout()
-        sublayout.addWidget(self.widEnab)
-        sublayout.addWidget(self.widC)
-        sublayout.addWidget(self.widPar)
-        sublayout.addWidget(self.widPer)
-        gridLayout.addLayout(sublayout,r,0,1,4 )
-
-        r+=1
-        gridLayout.addWidget(self.relD,r,0 )
-        gridLayout.addWidget(QLabel("d"),r,1 )
-        gridLayout.addWidget(self.widD,r,2 )
-        gridLayout.addWidget(self.lockD,r,3 )
-
-        r+=1
-        gridLayout.addWidget(self.relA,r,0 )
-        gridLayout.addWidget(QLabel("a"),r,1 )
-        gridLayout.addWidget(self.widA,r,2 )
-        gridLayout.addWidget(self.lockA,r,3 )
-
-        r+=1
-        gridLayout.addWidget(self.relX,r,0 )
-        gridLayout.addWidget(QLabel("x"),r,1 )
-        gridLayout.addWidget(self.widX,r,2 )
-        gridLayout.addWidget(self.lockX,r,3 )
-
-        r+=1
-        gridLayout.addWidget(self.relY,r,0 )
-        gridLayout.addWidget(QLabel("y"),r,1 )
-        gridLayout.addWidget(self.widY,r,2 )
-        gridLayout.addWidget(self.lockY,r,3 )
-
-        gridLayout.setRowStretch( r, 1 ) #does not work ?!
-        gridLayout.setColumnStretch( 2, 1 )
-
-
+        self.linEditFilter = LineEditFitler(self)
+        self.widA.installEventFilter(self.linEditFilter)
+        self.widD.installEventFilter(self.linEditFilter)
+        self.widX.installEventFilter(self.linEditFilter)
+        self.widY.installEventFilter(self.linEditFilter)
 
         # And finally add to the MainWindow
-        widget = QWidget()
-        widget.setLayout(gridLayout)
-        self.setWidget(widget)
         self.iface.mainWindow().addDockWidget(Qt.LeftDockWidgetArea, self)
     
     def keyPressEvent(self, event):
@@ -276,6 +156,7 @@ class CadInputWidget(QDockWidget):
             self.unlockAll()
         else:
             event.ignore()
+
 
     def validateField(self, field, lock):
         s = field.text()
@@ -401,21 +282,6 @@ def floatOrZero(value):
     try: return float(value)
     except: return 0.0
 
-class QLineEditWithShortcut(QLineEdit):
-    """
-    This class allows for internal shortcuts inside QLineEdit when they are being edited.
-    """
-
-    def __init__(self, cadwidget):
-        QLineEdit.__init__(self, "0")
-        self.cadwidget = cadwidget
-
-    def keyPressEvent(self, event):
-        self.textEdited.emit(self.text())
-        
-        self.cadwidget.keyPressEvent(event)
-        if not event.isAccepted():
-            QLineEdit.keyPressEvent(self,event)
 
 
 class Evaluator():
