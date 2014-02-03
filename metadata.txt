@@ -12,7 +12,7 @@
 name=CadInput
 qgisMinimumVersion=2.0
 description=Provides CAD-like input for QGIS : digitize features with precise numerical mouse constraints (demo : https://vimeo.com/85052231)
-version=0.4
+version=0.41
 author=Olivier Dalang
 email=olivier.dalang@gmail.com
 
@@ -21,9 +21,7 @@ email=olivier.dalang@gmail.com
 # Optional items:
 
 # Uncomment the following line and add your changelog entries:
-changelog=- 2014-01-31 - version 0.4
-    - improved performances on more complex files (thanks 3nids)
-    - snapping preferences now taken into account
+changelog=bug where distance does not lock fixed
 
 # tags are comma separated with spaces allowed
 tags=digitizing, cad, vector
