@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_dock.ui'
 #
-# Created: Mon Feb 03 20:11:50 2014
-#      by: PyQt4 UI code generator 4.10.1
+# Created: Tue Feb  4 13:45:33 2014
+#      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -151,9 +151,13 @@ class Ui_CadInputDock(object):
 
     def retranslateUi(self, CadInputDock):
         CadInputDock.setWindowTitle(_translate("CadInputDock", "CadInput", None))
+        self.widEnab.setToolTip(_translate("CadInputDock", "<html><head/><body><p><br/></p></body></html>", None))
         self.widEnab.setText(_translate("CadInputDock", "...", None))
+        self.widC.setToolTip(_translate("CadInputDock", "Construction mode", None))
         self.widC.setText(_translate("CadInputDock", "...", None))
+        self.widPer.setToolTip(_translate("CadInputDock", "Perpendicular", None))
         self.widPer.setText(_translate("CadInputDock", "...", None))
+        self.widPar.setToolTip(_translate("CadInputDock", "Parallel", None))
         self.widPar.setText(_translate("CadInputDock", "...", None))
         self.relD.setText(_translate("CadInputDock", "...", None))
         self.relA.setText(_translate("CadInputDock", "...", None))
@@ -167,6 +171,6 @@ class Ui_CadInputDock(object):
         self.label_3.setText(_translate("CadInputDock", "x", None))
         self.label_4.setText(_translate("CadInputDock", "y", None))
         self.label.setText(_translate("CadInputDock", "d", None))
-        self.enableAction.setText(_translate("CadInputDock", "Enable", None))
+        self.enableAction.setText(_translate("CadInputDock", "Enable CAD input", None))
 
 import resources_rc
