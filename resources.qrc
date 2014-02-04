@@ -4,21 +4,21 @@
         <file>resources/delta.png</file>
     </qresource>
     <qresource prefix="/plugins/cadinput">
-        <file>resources/lock.svg</file>
-    </qresource>
-    <qresource prefix="/plugins/cadinput">
-        <file>resources/pen.svg</file>
+        <file>resources/lock.png</file>
     </qresource>
      <qresource prefix="/plugins/cadinput">
-        <file>resources/perpendicular.svg</file>
+        <file>resources/perpendicular.png</file>
     </qresource>
      <qresource prefix="/plugins/cadinput">
-        <file>resources/parallel.svg</file>
+        <file>resources/parallel.png</file>
     </qresource>
     <qresource prefix="/plugins/cadinput">
         <file>resources/about.png</file>
     </qresource>
     <qresource prefix="/plugins/cadinput">
         <file>resources/icon.png</file>
+    </qresource>
+    <qresource prefix="/plugins/cadinput">
+        <file>resources/construction.png</file>
     </qresource>
 </RCC>

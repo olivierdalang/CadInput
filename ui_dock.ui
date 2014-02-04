@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>235</width>
-    <height>203</height>
+    <width>176</width>
+    <height>221</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,6 +26,12 @@
          <iconset resource="resources.qrc">
           <normaloff>:/plugins/cadinput/resources/icon.png</normaloff>:/plugins/cadinput/resources/icon.png</iconset>
         </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
        </widget>
       </item>
       <item>
@@ -35,7 +41,13 @@
         </property>
         <property name="icon">
          <iconset resource="resources.qrc">
-          <normaloff>:/plugins/cadinput/resources/pen.svg</normaloff>:/plugins/cadinput/resources/pen.svg</iconset>
+          <normaloff>:/plugins/cadinput/resources/construction.png</normaloff>:/plugins/cadinput/resources/construction.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -49,7 +61,13 @@
         </property>
         <property name="icon">
          <iconset resource="resources.qrc">
-          <normaloff>:/plugins/cadinput/resources/perpendicular.svg</normaloff>:/plugins/cadinput/resources/perpendicular.svg</iconset>
+          <normaloff>:/plugins/cadinput/resources/perpendicular.png</normaloff>:/plugins/cadinput/resources/perpendicular.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -63,7 +81,13 @@
         </property>
         <property name="icon">
          <iconset resource="resources.qrc">
-          <normaloff>:/plugins/cadinput/resources/parallel.svg</normaloff>:/plugins/cadinput/resources/parallel.svg</iconset>
+          <normaloff>:/plugins/cadinput/resources/parallel.png</normaloff>:/plugins/cadinput/resources/parallel.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -150,7 +174,7 @@
         </property>
         <property name="icon">
          <iconset resource="resources.qrc">
-          <normaloff>:/plugins/cadinput/resources/lock.svg</normaloff>:/plugins/cadinput/resources/lock.svg</iconset>
+          <normaloff>:/plugins/cadinput/resources/lock.png</normaloff>:/plugins/cadinput/resources/lock.png</iconset>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -164,7 +188,7 @@
         </property>
         <property name="icon">
          <iconset resource="resources.qrc">
-          <normaloff>:/plugins/cadinput/resources/lock.svg</normaloff>:/plugins/cadinput/resources/lock.svg</iconset>
+          <normaloff>:/plugins/cadinput/resources/lock.png</normaloff>:/plugins/cadinput/resources/lock.png</iconset>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -178,7 +202,7 @@
         </property>
         <property name="icon">
          <iconset resource="resources.qrc">
-          <normaloff>:/plugins/cadinput/resources/lock.svg</normaloff>:/plugins/cadinput/resources/lock.svg</iconset>
+          <normaloff>:/plugins/cadinput/resources/lock.png</normaloff>:/plugins/cadinput/resources/lock.png</iconset>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -192,7 +216,7 @@
         </property>
         <property name="icon">
          <iconset resource="resources.qrc">
-          <normaloff>:/plugins/cadinput/resources/lock.svg</normaloff>:/plugins/cadinput/resources/lock.svg</iconset>
+          <normaloff>:/plugins/cadinput/resources/lock.png</normaloff>:/plugins/cadinput/resources/lock.png</iconset>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -240,6 +264,19 @@
        <widget class="QLineEdit" name="widD"/>
       </item>
      </layout>
+    </item>
+    <item row="2" column="0">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
     </item>
    </layout>
   </widget>

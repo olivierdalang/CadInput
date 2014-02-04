@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_dock.ui'
 #
-# Created: Mon Feb  3 11:42:21 2014
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Mon Feb 03 20:11:50 2014
+#      by: PyQt4 UI code generator 4.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_CadInputDock(object):
     def setupUi(self, CadInputDock):
         CadInputDock.setObjectName(_fromUtf8("CadInputDock"))
-        CadInputDock.resize(242, 204)
+        CadInputDock.resize(176, 221)
         self.dockWidgetContents = QtGui.QWidget()
         self.dockWidgetContents.setObjectName(_fromUtf8("dockWidgetContents"))
         self.gridLayout = QtGui.QGridLayout(self.dockWidgetContents)
@@ -37,26 +37,30 @@ class Ui_CadInputDock(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/cadinput/resources/icon.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.widEnab.setIcon(icon)
+        self.widEnab.setIconSize(QtCore.QSize(24, 24))
         self.widEnab.setObjectName(_fromUtf8("widEnab"))
         self.horizontalLayout.addWidget(self.widEnab)
         self.widC = QtGui.QToolButton(self.dockWidgetContents)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/cadinput/resources/pen.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/cadinput/resources/construction.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.widC.setIcon(icon1)
+        self.widC.setIconSize(QtCore.QSize(24, 24))
         self.widC.setCheckable(True)
         self.widC.setObjectName(_fromUtf8("widC"))
         self.horizontalLayout.addWidget(self.widC)
         self.widPer = QtGui.QToolButton(self.dockWidgetContents)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/cadinput/resources/perpendicular.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/cadinput/resources/perpendicular.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.widPer.setIcon(icon2)
+        self.widPer.setIconSize(QtCore.QSize(24, 24))
         self.widPer.setCheckable(True)
         self.widPer.setObjectName(_fromUtf8("widPer"))
         self.horizontalLayout.addWidget(self.widPer)
         self.widPar = QtGui.QToolButton(self.dockWidgetContents)
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/cadinput/resources/parallel.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/cadinput/resources/parallel.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.widPar.setIcon(icon3)
+        self.widPar.setIconSize(QtCore.QSize(24, 24))
         self.widPar.setCheckable(True)
         self.widPar.setObjectName(_fromUtf8("widPar"))
         self.horizontalLayout.addWidget(self.widPar)
@@ -89,7 +93,7 @@ class Ui_CadInputDock(object):
         self.gridLayout_2.addWidget(self.relX, 2, 0, 1, 1)
         self.lockD = QtGui.QToolButton(self.dockWidgetContents)
         icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/cadinput/resources/lock.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon5.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/cadinput/resources/lock.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.lockD.setIcon(icon5)
         self.lockD.setCheckable(True)
         self.lockD.setObjectName(_fromUtf8("lockD"))
@@ -134,6 +138,8 @@ class Ui_CadInputDock(object):
         self.widD.setObjectName(_fromUtf8("widD"))
         self.gridLayout_2.addWidget(self.widD, 0, 2, 1, 1)
         self.gridLayout.addLayout(self.gridLayout_2, 1, 0, 1, 1)
+        spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout.addItem(spacerItem1, 2, 0, 1, 1)
         CadInputDock.setWidget(self.dockWidgetContents)
         self.enableAction = QtGui.QAction(CadInputDock)
         self.enableAction.setCheckable(True)
