@@ -294,12 +294,18 @@ class CadEventFilter(QObject):
         #D
         dx =  p3.x()-self.p2.x()
         dy =  p3.y()-self.p2.y()
+        dist = math.sqrt( dx*dx + dy*dy )
 
         if self.inputwidget.ld:
-            vP = self.inputwidget.d / math.sqrt( dx*dx + dy*dy )
-            p3.set( self.p2.x()+dx*vP,  self.p2.y()+dy*vP )
+            if dist == 0:
+                # handle case where mouse is over origin and distance constraint is enabled
+                # take arbitrary horizontal line
+                p3.set( self.p2.x()+self.inputwidget.d, self.p2.y() )
+            else:
+                vP = self.inputwidget.d / dist
+                p3.set( self.p2.x()+dx*vP,  self.p2.y()+dy*vP )
 
-            if self.snapSegment is not None and not self.inputwidget.la:  
+            if self.snapSegment is not None and not self.inputwidget.la:
                 # we will magnietize to the intersection of that segment and the lockedDistance !
                 # formula taken from http://mathworld.wolfram.com/Circle-LineIntersection.html
 
@@ -342,7 +348,7 @@ class CadEventFilter(QObject):
                         p3.setX( ax )
                         p3.setY( ay )
         else:
-            self.inputwidget.d = math.sqrt( dx*dx + dy*dy )            
+            self.inputwidget.d = dist
 
 
         #Update the widget's x&y values (for display only)
