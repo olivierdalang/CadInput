@@ -165,9 +165,9 @@ class CadEventFilter(QObject):
             return True
         elif self.inputwidget.active and event.type() == QEvent.KeyPress:
             # We redirect all key inputs to the inputwidget.
-            # TODO : This will probably prevent all shortcuts to fail... Probably this would work : return self.inputwidget.keyPressEvent(event)
-            QCoreApplication.sendEvent(self.inputwidget,event)            
-            return True
+            self.inputwidget.keyPressEvent(event)
+            # If the event is not accpted, we return False, so the event is propagated to the MapCanvas (and normal shortcuts should work)
+            return event.isAccepted()
         else:
             #In case we don't manage this type of event, or if it was already treated (spontaneous==False), we return the normal implementation
             return QObject.eventFilter(self, obj, event)
