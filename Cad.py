@@ -97,7 +97,8 @@ class Cad(QObject):
 
         #and remove the item menu
         self.iface.removePluginMenu(u"&CadInput", self.helpAction)
-        self.iface.removeToolBarIcon(self.helpAction)
+        self.iface.removePluginMenu(u"&CadInput", self.enableAction)
+        self.iface.removeToolBarIcon(self.enableAction)
 
     def doHelpAction(self):
         self.aboutWindow = CadHelp()
