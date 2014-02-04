@@ -92,6 +92,7 @@ class Cad(QObject):
         self.iface.mapCanvas().removeEventFilter( self.eventFilter )
 
         #and we remove the widgets also
+        self.inputwidget.close()
         self.inputwidget.deleteLater()
         self.paintwidget.deleteLater()
 
