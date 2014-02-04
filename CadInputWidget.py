@@ -106,6 +106,13 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
 
         # And finally add to the MainWindow
         self.iface.mainWindow().addDockWidget(Qt.LeftDockWidgetArea, self)
+
+    def closeEvent(self, event):
+        self.widA.removeEventFilter(self.linEditFilter)
+        self.widD.removeEventFilter(self.linEditFilter)
+        self.widX.removeEventFilter(self.linEditFilter)
+        self.widY.removeEventFilter(self.linEditFilter)
+        event.accept()
     
     def keyPressEvent(self, event):
         """
