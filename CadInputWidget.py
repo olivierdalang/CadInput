@@ -197,11 +197,7 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
         # relative coordinatesonly available with 1 previous point
         self.relX.setEnabled(cadConstraintCapabilities.relativePos)
         self.relY.setEnabled(cadConstraintCapabilities.relativePos)
-        # uncheck relative if there is not enough point
-        if not cadConstraintCapabilities.relativePos:
-            self.relX.setChecked(False)
-            self.relY.setChecked(False)
-
+        
         # absolute angle only possible with 1 previous point
         self.widA.setEnabled(cadConstraintCapabilities.absoluteAngle)
         self.lockA.setEnabled(cadConstraintCapabilities.absoluteAngle)
