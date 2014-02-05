@@ -58,10 +58,10 @@ class CadPaintWidget(QWidget):
         """
         Paints the visual feedback (painting is done in screen coordinates).
         """
+        pointListLength = len(self.eventfilter.cadPointList)
         curPoint = self.eventfilter.cadPointList.currentPoint()
         prevPoint = self.eventfilter.cadPointList.previousPoint()
         penulPoint = self.eventfilter.cadPointList.penultimatePoint()
-        capabilities = self.eventfilter.cadPointList.constraintCapabilities
 
         if math.isnan( self._tX(0) ) or not self.inputwidget.active or not self.inputwidget.enabled:
             #on loading QGIS, it seems QgsMapToPixel is not ready and return NaNs...
@@ -129,8 +129,8 @@ class CadPaintWidget(QWidget):
 
 
         #Draw angle
-        if capabilities.absoluteAngle:
-            if self.inputwidget.ra and capabilities.relativeAngle:
+        if pointListLength>1:
+            if self.inputwidget.ra and pointListLength>2:
                 a0 = math.atan2( -(prevPoint.y()-penulPoint.y()), prevPoint.x()-penulPoint.x() )
                 a = a0-math.radians(self.inputwidget.a)
             else:
@@ -156,7 +156,7 @@ class CadPaintWidget(QWidget):
                                     self._tY( prevPoint.y())+self.width()*math.sin(a)  )
 
         #Draw distance
-        if capabilities.distance and self.inputwidget.ld:
+        if pointListLength>1 and self.inputwidget.ld:
             painter.setPen( pLocked )
             painter.drawEllipse(    self._tX( prevPoint.x() - self.inputwidget.d ),
                                     self._tY( prevPoint.y() + self.inputwidget.d ),
@@ -168,7 +168,7 @@ class CadPaintWidget(QWidget):
         if self.inputwidget.lx:
             painter.setPen( pLocked )
             if self.inputwidget.rx:
-                if capabilities.relativePos:
+                if pointListLength>1:
                     x = self._tX( prevPoint.x()+self.inputwidget.x )
                 else:
                     x = None
@@ -184,7 +184,7 @@ class CadPaintWidget(QWidget):
         if self.inputwidget.ly:
             painter.setPen( pLocked )
             if self.inputwidget.ry:
-                if capabilities.relativePos:
+                if pointListLength>1:
                     y = self._tY( prevPoint.y()+self.inputwidget.y )
                 else:
                     y = None

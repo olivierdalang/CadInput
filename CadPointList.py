@@ -21,7 +21,6 @@
 """
 
 from qgis.core import QgsPoint
-from CadConstraintCapabilities import CadConstraintCapabilities
 
 class CadPointList(list):
     """
@@ -31,13 +30,9 @@ class CadPointList(list):
         list.__init__(self)
         self.inputWidget = inputWidget
 
-        # constraint capabilities
-        self.constraintCapabilities = CadConstraintCapabilities()
-
     def empty(self):
         self[:] = []
-        self.constraintCapabilities.update(0)
-        self.inputWidget.enableConstraints(self.constraintCapabilities)
+        self.inputWidget.enableConstraints(len(self))
         self.inputWidget.unlockAll()
 
     def updateCurrentPoint(self, point):
@@ -45,14 +40,11 @@ class CadPointList(list):
             self[0] = point
         else:
             self.insert(0, point)
-            self.constraintCapabilities.update(1)
-            self.inputWidget.enableConstraints(self.constraintCapabilities)
+            self.inputWidget.enableConstraints(len(self))
 
     def newPoint(self):
         self.insert(0, self[0])
-        hasChanged = self.constraintCapabilities.update(len(self))
-        if hasChanged:
-            self.inputWidget.enableConstraints(self.constraintCapabilities)
+        self.inputWidget.enableConstraints(len(self))
 
     def currentPoint(self):
         if len(self):

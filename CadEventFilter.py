@@ -199,11 +199,7 @@ class CadEventFilter(QObject):
         # X constrain
         if self.inputwidget.lx:
             if self.inputwidget.rx:
-                if self.cadPointList.constraintCapabilities.relativePos:
-                    point.setX( previousPoint.x() + self.inputwidget.x )
-                else:
-                    # TODO raise error?
-                    pass
+                point.setX( previousPoint.x() + self.inputwidget.x )
             else:
                 point.setX( self.inputwidget.x )
 
@@ -221,11 +217,7 @@ class CadEventFilter(QObject):
         # Y constrain
         if self.inputwidget.ly:
             if self.inputwidget.ry:
-                if self.cadPointList.constraintCapabilities.relativeAngle:
-                    point.setY( previousPoint.y() + self.inputwidget.y )
-                else:
-                    # TODO raise error?
-                    pass
+                point.setY( previousPoint.y() + self.inputwidget.y )
             else:
                 point.setY( self.inputwidget.y )
 
@@ -242,22 +234,21 @@ class CadEventFilter(QObject):
 
         #################
         # Angle constrain
-        if self.cadPointList.constraintCapabilities.absoluteAngle:
+        if len(self.cadPointList)>1:
             dx = point.x() - previousPoint.x()
             dy = point.y() - previousPoint.y()
-        if self.inputwidget.ra and self.cadPointList.constraintCapabilities.relativeAngle:
+        if self.inputwidget.ra and len(self.cadPointList)>2:
             ddx = previousPoint.x() - penulPoint.x()
             ddy = previousPoint.y() - penulPoint.y()
 
-        if self.cadPointList.constraintCapabilities.absoluteAngle and self.inputwidget.la:
+        if len(self.cadPointList)>1 and self.inputwidget.la:
             a = self.inputwidget.a/180.0*math.pi
-            if self.inputwidget.ra:
-                if self.cadPointList.constraintCapabilities.relativeAngle:
-                    # We compute the angle relative to the last segment (0° is aligned with last segment)
-                    a += math.atan2(ddy, ddx)
-                else:
-                    # if relative mode and not enough points: do absolute angle
-                    pass
+            if self.inputwidget.ra and len(self.cadPointList)>2:
+                # We compute the angle relative to the last segment (0° is aligned with last segment)
+                a += math.atan2(ddy, ddx)
+            else:
+                # if relative mode and not enough points: do absolute angle
+                pass
 
             cosA = math.cos( a )
             sinA = math.sin( a )
@@ -279,8 +270,8 @@ class CadEventFilter(QObject):
                 if l1.intersect(l2, intP) == QLineF.UnboundedIntersection and not (ang < t or ang > 360-t or (ang > 180-t and ang < 180+t) ):
                     point.set( intP.x(), intP.y() )
         else:
-            if self.cadPointList.constraintCapabilities.absoluteAngle:
-                if self.inputwidget.ra and self.cadPointList.constraintCapabilities.relativeAngle:
+            if len(self.cadPointList)>1:
+                if self.inputwidget.ra and len(self.cadPointList)>2:
                     lastA = math.atan2(ddy, ddx)
                 else:
                     lastA = 0
@@ -290,12 +281,12 @@ class CadEventFilter(QObject):
 
         #################
         # Distance constrain
-        if self.cadPointList.constraintCapabilities.distance:
+        if len(self.cadPointList)>1:
             dx = point.x() - previousPoint.x()
             dy = point.y() - previousPoint.y()
             dist = math.sqrt(point.sqrDist(previousPoint))
 
-        if self.cadPointList.constraintCapabilities.distance and self.inputwidget.ld:
+        if len(self.cadPointList)>1 and self.inputwidget.ld:
             if dist == 0:
                 # handle case where mouse is over origin and distance constraint is enabled
                 # take arbitrary horizontal line
@@ -319,7 +310,7 @@ class CadEventFilter(QObject):
 
         #Update the widget's x&y values (for display only)
         if self.inputwidget.rx:
-            if self.cadPointList.constraintCapabilities.relativePos:
+            if len(self.cadPointList)>1:
                 self.inputwidget.x = point.x() - previousPoint.x()
             else:
                 self.inputwidget.rx = False
@@ -327,7 +318,7 @@ class CadEventFilter(QObject):
             self.inputwidget.x = point.x()
 
         if self.inputwidget.ry:
-            if self.cadPointList.constraintCapabilities.relativePos:
+            if len(self.cadPointList)>1:
                 self.inputwidget.y = point.y() - previousPoint.y()
             else:
                 self.inputwidget.ry = False

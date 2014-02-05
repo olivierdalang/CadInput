@@ -26,7 +26,6 @@ import operator as op
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from CadConstraintCapabilities import CadConstraintCapabilities
 from ui_dock import Ui_CadInputDock
 
 
@@ -106,7 +105,7 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
         self.widY.installEventFilter(self.linEditFilter)
 
         # not point at start, do not allow setting constraints
-        self.enableConstraints(CadConstraintCapabilities())
+        self.enableConstraints(0)
 
         # And finally add to the MainWindow
         self.iface.mainWindow().addDockWidget(Qt.LeftDockWidgetArea, self)
@@ -192,21 +191,18 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
         self.active = (self.iface.mapCanvas().mapTool() is not None and self.iface.mapCanvas().mapTool().isEditTool())
 
 
-    def enableConstraints(self, cadConstraintCapabilities):
-
-        # relative coordinatesonly available with 1 previous point
-        self.relX.setEnabled(cadConstraintCapabilities.relativePos)
-        self.relY.setEnabled(cadConstraintCapabilities.relativePos)
-        
+    def enableConstraints(self, nPoints):
         # absolute angle only possible with 1 previous point
-        self.widA.setEnabled(cadConstraintCapabilities.absoluteAngle)
-        self.lockA.setEnabled(cadConstraintCapabilities.absoluteAngle)
-        # relative angle only available with 2 previous point
-        self.relA.setEnabled(cadConstraintCapabilities.relativeAngle)
-
+        self.widA.setEnabled( nPoints>1 )
+        self.lockA.setEnabled( nPoints>1 )
         # relative distance only available with 1 previous point
-        self.widD.setEnabled(cadConstraintCapabilities.distance)
-        self.lockD.setEnabled(cadConstraintCapabilities.distance)
+        self.widD.setEnabled( nPoints>1 )
+        self.lockD.setEnabled( nPoints>1 )
+        # relative coordinatesonly available with 1 previous point
+        self.relX.setEnabled( nPoints>1 )
+        self.relY.setEnabled( nPoints>1 )
+        # relative angle only available with 2 previous point
+        self.relA.setEnabled( nPoints>2 )
 
 
     """
@@ -275,7 +271,6 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
     def rd(self): return True
     @rd.setter
     def rd(self, value): raise Exception
-
 
 
     #Misc properties
