@@ -253,13 +253,12 @@ class CadEventFilter(QObject):
 
         #################
         # Angle constrain
-        if self.inputwidget.la and self.cadPointList.constraintCapabilities.absoluteAngle:
+        if self.cadPointList.constraintCapabilities.absoluteAngle and self.inputwidget.la:
             a = self.inputwidget.a/180.0*math.pi
             if self.inputwidget.ra:
                 if self.cadPointList.constraintCapabilities.relativeAngle:
                     # We compute the angle relative to the last segment (0° is aligned with last segment)
-                    lastA = math.atan2(ddy, ddx)
-                    a += lastA
+                    a += math.atan2(ddy, ddx)
                 else:
                     # if relative mode and not enough points: do absolute angle
                     pass
@@ -282,8 +281,7 @@ class CadEventFilter(QObject):
                 t = 0.0001
                 # TODO : this may cause some accuracy problem ?
                 if l1.intersect(l2, intP) == QLineF.UnboundedIntersection and not (ang < t or ang > 360-t or (ang > 180-t and ang < 180+t) ):
-                    point.setX( intP.x() )
-                    point.setY( intP.y() )
+                    point.set( intP.x(), intP.y() )
         else:
             if self.cadPointList.constraintCapabilities.absoluteAngle:
                 if self.inputwidget.ra and self.cadPointList.constraintCapabilities.relativeAngle:
