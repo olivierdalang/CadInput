@@ -310,10 +310,11 @@ class CadEventFilter(QObject):
                 p1, p2 = CadIntersection.CircleLineIntersection(self.snapSegment[1], self.snapSegment[2],
                                                                 previousPoint, self.inputwidget.d)
                 #we snap to the nearest intersection
-                if point.sqrDist(p1) < point.sqrDist(p2):
-                    point.set( p1.x(), p1.y() )
-                else:
-                    point.set( p2.x(), p2.y() )
+                if p1 is not None:
+                    if point.sqrDist(p1) < point.sqrDist(p2):
+                        point.set( p1.x(), p1.y() )
+                    else:
+                        point.set( p2.x(), p2.y() )
         else:
             self.inputwidget.d = dist
 
