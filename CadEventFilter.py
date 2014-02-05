@@ -25,7 +25,11 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 
+from CadPointList import CadPointList
+from CadIntersection import *
+
 import math
+
 
 class CadEventFilter(QObject):
     """
@@ -43,10 +47,8 @@ class CadEventFilter(QObject):
         self.mapCanvas = iface.mapCanvas()
         self.inputwidget = inputwidget
 
-        #input coordinates
-        self.p1 = QgsPoint() # previous click, used for delta angles
-        self.p2 = QgsPoint() # last click, used for delta positions
-        self.p3 = QgsPoint() # current position
+        # store points
+        self.cadPointList = CadPointList(inputwidget)
         self.snapSegment = None # segment snapped at current position (if any)
         self.snapPoint = None # point snapped at current position (if any)
 
@@ -110,13 +112,14 @@ class CadEventFilter(QObject):
 
             # Set the current mouse position (either from snapPoint, from snapSegment, or regular coordinate transform)
             if self.snapPoint is not None:
-                p3 = QgsPoint(self.snapPoint)
+                curPoint = QgsPoint(self.snapPoint)
             elif self.snapSegment is not None:
-                p3 = self.snapSegment[0]
+                curPoint = self.snapSegment[0]
             else:
-                p3 = self.iface.mapCanvas().getCoordinateTransform().toMapCoordinates( event.pos() )
+                curPoint = self.iface.mapCanvas().getCoordinateTransform().toMapCoordinates( event.pos() )
 
-            self.p3 = self._constrain(p3)
+            curPoint = self._constrain(curPoint)
+            self.cadPointList.updateCurrentPoint(curPoint)
 
 
             # Depending on the mode...
@@ -142,13 +145,13 @@ class CadEventFilter(QObject):
                     if event.type() == QEvent.MouseButtonPress or event.type() == QEvent.MouseButtonRelease:
                         #B2a. Mouse press input mode
                         self.createSnappingPoint()
-                        modifiedEvent = QMouseEvent( event.type(), self._toPixels(self.p3), event.button(), event.buttons(), event.modifiers() )
+                        modifiedEvent = QMouseEvent( event.type(), self._toPixels(curPoint), event.button(), event.buttons(), event.modifiers() )
                         QCoreApplication.sendEvent(obj,modifiedEvent)
                         self.removeSnappingPoint()
 
                     else:
                         #B2B. Mouse move input mode
-                        modifiedEvent = QMouseEvent( event.type(), self._toPixels(self.p3), event.button(), event.buttons(), event.modifiers() )
+                        modifiedEvent = QMouseEvent( event.type(), self._toPixels(curPoint), event.button(), event.buttons(), event.modifiers() )
                         QCoreApplication.sendEvent(obj,modifiedEvent)
 
                 # We unlock all the inputs, since we don't want locking to stay for the next point (actually, sometimes we do, this could be an option)
@@ -157,17 +160,23 @@ class CadEventFilter(QObject):
 
                 if event.type() == QEvent.MouseButtonRelease:
                     # In input mode (B), we register the last points for following relative calculation in case of mousePress
-                    self.p1 = self.p2
-                    self.p2 = self.p3
-
+                    self.cadPointList.newPoint()
 
             # By returning True, we inform the eventSystem that the event must not be sent further (since a new event has been sent through QCoreApplication)
             return True
+
         elif self.inputwidget.active and event.type() == QEvent.KeyPress:
             # We redirect all key inputs to the inputwidget.
             self.inputwidget.keyPressEvent(event)
             # If the event is not accpted, we return False, so the event is propagated to the MapCanvas (and normal shortcuts should work)
             return event.isAccepted()
+        elif event.type() == QEvent.MouseButtonRelease and event.button() == Qt.RightButton:
+            # cancel digitization on right click
+            self.cadPointList.empty()
+            self.snapSegment = None # segment snapped at current position (if any)
+            self.snapPoint = None # point snapped at current position (if any)
+            QCoreApplication.sendEvent(obj,event)
+            return True
         else:
             #In case we don't manage this type of event, or if it was already treated (spontaneous==False), we return the normal implementation
             return QObject.eventFilter(self, obj, event)
@@ -177,101 +186,81 @@ class CadEventFilter(QObject):
     ##### CONSTRAINING #####
     ########################
 
-    def _constrain(self, p3):
+    def _constrain(self, point):
         """
         This method returns a point constrained by the w's settings and, by the way, updates the w's displayed values.
         """
+        previousPoint = self.cadPointList.previousPoint()
+        penulPoint = self.cadPointList.penultimatePoint()
+        dx, dy, ddx, ddy, dist = None, None, None, None, None
 
 
-        #X
+        #################
+        # X constrain
         if self.inputwidget.lx:
             if self.inputwidget.rx:
-                p3.setX( self.p2.x() + self.inputwidget.x )
+                point.setX( previousPoint.x() + self.inputwidget.x )
             else:
-                p3.setX( self.inputwidget.x )
-   
+                point.setX( self.inputwidget.x )
+
             if self.snapSegment is not None and not self.inputwidget.ly:
                 # we will magnietize to the intersection of that segment and the lockedX !
-                x = p3.x()
-
-                x1 = self.snapSegment[1].x()
-                y1 = self.snapSegment[1].y()
-                x2 = self.snapSegment[2].x()
-                y2 = self.snapSegment[2].y()
-
-                dx = x2 - x1
-                dy = y2 - y1
-
-                if dy==0:
-                    y = y1
-                else:
-                    y = y1+(dy * (x-x1) ) / dx
-
-                p3.setY( y )
-
+                y = CadIntersection.LineIntersectionAtX( self.snapSegment[1], self.snapSegment[2], point.x() )
+                point.setY( y )
         else:
             if self.inputwidget.rx:
-                self.inputwidget.x = p3.x()-self.p2.x()
+                self.inputwidget.x = point.x() - previousPoint.x()
             else:
-                self.inputwidget.x = p3.x()
+                self.inputwidget.x = point.x()
 
-        
-
-        #Y
+        #################
+        # Y constrain
         if self.inputwidget.ly:
             if self.inputwidget.ry:
-                p3.setY( self.p2.y() + self.inputwidget.y )
+                point.setY( previousPoint.y() + self.inputwidget.y )
             else:
-                p3.setY( self.inputwidget.y )
+                point.setY( self.inputwidget.y )
 
             if self.snapSegment is not None and not self.inputwidget.lx:  
-                # we will magnietize to the intersection of that segment and the lockedY !              
-
-                y = p3.y()
-
-                x1 = self.snapSegment[1].x()
-                y1 = self.snapSegment[1].y()
-                x2 = self.snapSegment[2].x()
-                y2 = self.snapSegment[2].y()
-
-                dx = x2 - x1
-                dy = y2 - y1
-
-                if dy==0:
-                    x = x1
-                else:
-                    x = x1+(dx * (y-y1) ) / dy
-
-                p3.setX( x )
-
+                # we will magnietize to the intersection of that segment and the lockedY !
+                x = CadIntersection.LineIntersectionAtY( self.snapSegment[1], self.snapSegment[2], point.y() )
+                point.setX( x )
         else:
             if self.inputwidget.ry:
-                self.inputwidget.y = p3.y()-self.p2.y()
+                self.inputwidget.y = point.y() - previousPoint.y()
+
             else:
-                self.inputwidget.y = p3.y()
+                self.inputwidget.y = point.y()
 
-        #A
-        dx =  p3.x()-self.p2.x()
-        dy =  p3.y()-self.p2.y()
+        #################
+        # Angle constrain
+        if len(self.cadPointList)>1:
+            dx = point.x() - previousPoint.x()
+            dy = point.y() - previousPoint.y()
+        if self.inputwidget.ra and len(self.cadPointList)>2:
+            ddx = previousPoint.x() - penulPoint.x()
+            ddy = previousPoint.y() - penulPoint.y()
 
-        if self.inputwidget.la:
+        if len(self.cadPointList)>1 and self.inputwidget.la:
             a = self.inputwidget.a/180.0*math.pi
-            if self.inputwidget.ra:
+            if self.inputwidget.ra and len(self.cadPointList)>2:
                 # We compute the angle relative to the last segment (0° is aligned with last segment)
-                lastA = math.atan2(self.p2.y() - self.p1.y(), self.p2.x() - self.p1.x())
-                a = lastA+a
+                a += math.atan2(ddy, ddx)
+            else:
+                # if relative mode and not enough points: do absolute angle
+                pass
 
             cosA = math.cos( a )
             sinA = math.sin( a )
             v1 = [ cosA, sinA ]
             v2 = [ dx, dy ]
             vP = v1[0]*v2[0]+v1[1]*v2[1]
-            p3.set( self.p2.x()+cosA*vP, self.p2.y()+sinA*vP)
+            point.set( previousPoint.x()+cosA*vP, previousPoint.y()+sinA*vP)
 
             if self.snapSegment is not None and not self.inputwidget.ld:  
                 # we will magnietize to the intersection of that segment and the lockedAngle !
 
-                l1 = QLineF(self.p2.x(), self.p2.y(), self.p2.x()+math.cos(a), self.p2.y()+math.sin(a))
+                l1 = QLineF(previousPoint.x(), previousPoint.y(), previousPoint.x()+math.cos(a), previousPoint.y()+math.sin(a))
                 l2 = QLineF(self.snapSegment[1].x(), self.snapSegment[1].y(), self.snapSegment[2].x() ,self.snapSegment[2].y())
 
                 intP = QPointF()
@@ -279,101 +268,79 @@ class CadEventFilter(QObject):
                 t = 0.0001
                 # TODO : this may cause some accuracy problem ?
                 if l1.intersect(l2, intP) == QLineF.UnboundedIntersection and not (ang < t or ang > 360-t or (ang > 180-t and ang < 180+t) ):
-                    p3.setX( intP.x() )
-                    p3.setY( intP.y() )
- 
+                    point.set( intP.x(), intP.y() )
         else:
-            if self.inputwidget.ra:
-                lastA = math.atan2(self.p2.y() - self.p1.y(), self.p2.x() - self.p1.x())
+            if len(self.cadPointList)>1:
+                if self.inputwidget.ra and len(self.cadPointList)>2:
+                    lastA = math.atan2(ddy, ddx)
+                else:
+                    lastA = 0
                 self.inputwidget.a = (math.atan2( dy, dx )-lastA)/math.pi*180
             else:
-                self.inputwidget.a = math.atan2( dy, dx )/math.pi*180
+                self.inputwidget.a = None
 
+        #################
+        # Distance constrain
+        if len(self.cadPointList)>1:
+            dx = point.x() - previousPoint.x()
+            dy = point.y() - previousPoint.y()
+            dist = math.sqrt(point.sqrDist(previousPoint))
 
-
-        #D
-        dx =  p3.x()-self.p2.x()
-        dy =  p3.y()-self.p2.y()
-        dist = math.sqrt( dx*dx + dy*dy )
-
-        if self.inputwidget.ld:
+        if len(self.cadPointList)>1 and self.inputwidget.ld:
             if dist == 0:
                 # handle case where mouse is over origin and distance constraint is enabled
                 # take arbitrary horizontal line
-                p3.set( self.p2.x()+self.inputwidget.d, self.p2.y() )
+                point.set( previousPoint.x()+self.inputwidget.d, previousPoint.y() )
             else:
                 vP = self.inputwidget.d / dist
-                p3.set( self.p2.x()+dx*vP,  self.p2.y()+dy*vP )
+                point.set( previousPoint.x()+dx*vP,  previousPoint.y()+dy*vP )
 
             if self.snapSegment is not None and not self.inputwidget.la:
                 # we will magnietize to the intersection of that segment and the lockedDistance !
-                # formula taken from http://mathworld.wolfram.com/Circle-LineIntersection.html
-
-                xo = self.p2.x()
-                yo = self.p2.y()
-
-                x1 = self.snapSegment[1].x()-xo
-                y1 = self.snapSegment[1].y()-yo
-                x2 = self.snapSegment[2].x()-xo
-                y2 = self.snapSegment[2].y()-yo
-
-                r = self.inputwidget.d
-
-                dx = x2-x1
-                dy = y2-y1
-                dr = math.sqrt(dx**2+dy**2)
-                d = x1*y2-x2*y1
-
-                def sgn(x): return -1 if x<0 else 1
-
-                DISC = r**2 * dr**2 - d**2
-
-                if DISC<=0:
-                    #no intersection or tangeant
-                    pass
-                else:
-                    #first possible point
-                    ax = xo  +  (d*dy+sgn(dy)*dx*math.sqrt(r**2*dr**2-d**2))/(dr**2)
-                    ay = yo  +  (-d*dx+abs(dy)*math.sqrt(r**2*dr**2-d**2))/(dr**2)
-
-                    #second possible point
-                    bx = xo  +  (d*dy-sgn(dy)*dx*math.sqrt(r**2*dr**2-d**2))/(dr**2)
-                    by = yo  +  (-d*dx-abs(dy)*math.sqrt(r**2*dr**2-d**2))/(dr**2)
-
-                    #we snap to the nearest intersection
-                    if (ax-p3.x())**2+(ay-p3.y())**2 >= (bx-p3.x())**2+(by-p3.y())**2:
-                        p3.setX( bx )
-                        p3.setY( by )
+                p1, p2 = CadIntersection.CircleLineIntersection(self.snapSegment[1], self.snapSegment[2],
+                                                                previousPoint, self.inputwidget.d)
+                #we snap to the nearest intersection
+                if p1 is not None:
+                    if point.sqrDist(p1) < point.sqrDist(p2):
+                        point.set( p1.x(), p1.y() )
                     else:
-                        p3.setX( ax )
-                        p3.setY( ay )
+                        point.set( p2.x(), p2.y() )
         else:
             self.inputwidget.d = dist
 
-
         #Update the widget's x&y values (for display only)
         if self.inputwidget.rx:
-            self.inputwidget.x = p3.x()-self.p2.x()
-        else:
-            self.inputwidget.x = p3.x()
+            if len(self.cadPointList)>1:
+                self.inputwidget.x = point.x() - previousPoint.x()
+            else:
+                self.inputwidget.rx = False
+        if not self.inputwidget.rx:
+            self.inputwidget.x = point.x()
 
         if self.inputwidget.ry:
-            self.inputwidget.y = p3.y()-self.p2.y()
-        else:
-            self.inputwidget.y = p3.y()
+            if len(self.cadPointList)>1:
+                self.inputwidget.y = point.y() - previousPoint.y()
+            else:
+                self.inputwidget.ry = False
+        if not self.inputwidget.ry:
+            self.inputwidget.y = point.y()
+
+        return point
 
 
-        return p3
     def _alignToSegment(self):
         """
         Set's the CadWidget's angle value to be parrelel to self.snapSegment's angle
         """
+        
+        previousPoint = self.cadPointList.previousPoint()
+        penulPoint = self.cadPointList.penultimatePoint()
 
         if self.snapSegment is not None:
 
             angle = math.atan2( self.snapSegment[1].y()-self.snapSegment[2].y(), self.snapSegment[1].x()-self.snapSegment[2].x() )
             if self.inputwidget.ra:
-                lastangle = math.atan2(self.p2.y()-self.p1.y(),self.p2.x()-self.p1.x())
+                lastangle = math.atan2(previousPoint.y()-penulPoint.y(),previousPoint.x()-penulPoint.x())
                 angle -= lastangle
 
             if self.inputwidget.par:
@@ -447,7 +414,7 @@ class CadEventFilter(QObject):
         QgsProject.instance().blockSignals(False) #we don't want to refresh the snapping UI
 
         feature = QgsFeature()
-        feature.setGeometry( QgsGeometry.fromPoint( self.p3 ) )
+        feature.setGeometry( QgsGeometry.fromPoint( self.cadPointList.currentPoint() ) )
         provider.addFeatures([feature])
 
         self.memoryLayer.updateExtents()

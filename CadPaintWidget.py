@@ -58,6 +58,10 @@ class CadPaintWidget(QWidget):
         """
         Paints the visual feedback (painting is done in screen coordinates).
         """
+        pointListLength = len(self.eventfilter.cadPointList)
+        curPoint = self.eventfilter.cadPointList.currentPoint()
+        prevPoint = self.eventfilter.cadPointList.previousPoint()
+        penulPoint = self.eventfilter.cadPointList.penultimatePoint()
 
         if math.isnan( self._tX(0) ) or not self.inputwidget.active or not self.inputwidget.enabled:
             #on loading QGIS, it seems QgsMapToPixel is not ready and return NaNs...
@@ -88,11 +92,12 @@ class CadPaintWidget(QWidget):
                                     20,
                                     20  )
 
-            painter.setPen( pSnapLine )
-            painter.drawLine(   x,
-                                y,
-                                self._tX( self.eventfilter.p3.x()),
-                                self._tY( self.eventfilter.p3.y())  )
+            if curPoint is not None:
+                painter.setPen( pSnapLine )
+                painter.drawLine(   x,
+                                    y,
+                                    self._tX( curPoint.x()),
+                                    self._tY( curPoint.y())  )
 
 
         #Draw segment snap
@@ -105,11 +110,12 @@ class CadPaintWidget(QWidget):
                                 self._tY( self.eventfilter.snapSegment[2].y())  )
 
 
-            painter.setPen( pSnapLine )
-            painter.drawLine(   self._tX( self.eventfilter.snapSegment[1].x()),
-                                self._tY( self.eventfilter.snapSegment[1].y()),
-                                self._tX( self.eventfilter.p3.x()),
-                                self._tY( self.eventfilter.p3.y())  )
+            if curPoint is not None:
+                painter.setPen( pSnapLine )
+                painter.drawLine(   self._tX( self.eventfilter.snapSegment[1].x()),
+                                    self._tY( self.eventfilter.snapSegment[1].y()),
+                                    self._tX( curPoint.x()),
+                                    self._tY( curPoint.y())  )
 
 
         #Draw segment par/per input
@@ -123,38 +129,37 @@ class CadPaintWidget(QWidget):
 
 
         #Draw angle
-        if self.inputwidget.ra:                
-            a0 = math.atan2( -(self.eventfilter.p2.y()-self.eventfilter.p1.y()), self.eventfilter.p2.x()-self.eventfilter.p1.x() )
-            a = a0-math.radians(self.inputwidget.a)
-        else:
-            a0 = 0
-            a = -math.radians(self.inputwidget.a)
+        if pointListLength>1:
+            if self.inputwidget.ra and pointListLength>2:
+                a0 = math.atan2( -(prevPoint.y()-penulPoint.y()), prevPoint.x()-penulPoint.x() )
+                a = a0-math.radians(self.inputwidget.a)
+            else:
+                a0 = 0
+                a = -math.radians(self.inputwidget.a)
 
-        painter.setPen( pConstruction2 )
-        painter.drawArc(    self._tX( self.eventfilter.p2.x())-20,
-                            self._tY( self.eventfilter.p2.y())-20,
-                            40, 40,
-                            16*math.degrees(-a0),
-                            16*self.inputwidget.a  )
-        painter.drawLine(   self._tX( self.eventfilter.p2.x()),
-                            self._tY( self.eventfilter.p2.y()),
-                            self._tX( self.eventfilter.p2.x())+60*math.cos(a0),
-                            self._tY( self.eventfilter.p2.y())+60*math.sin(a0)  )
+            painter.setPen( pConstruction2 )
+            painter.drawArc(    self._tX( prevPoint.x())-20,
+                                self._tY( prevPoint.y())-20,
+                                40, 40,
+                                16*math.degrees(-a0),
+                                16*self.inputwidget.a  )
+            painter.drawLine(   self._tX( prevPoint.x()),
+                                self._tY( prevPoint.y()),
+                                self._tX( prevPoint.x())+60*math.cos(a0),
+                                self._tY( prevPoint.y())+60*math.sin(a0)  )
 
-        if self.inputwidget.la:
-            painter.setPen( pLocked )
-            painter.drawLine(   self._tX( self.eventfilter.p2.x())-self.width()*math.cos(a),
-                                self._tY( self.eventfilter.p2.y())-self.width()*math.sin(a),
-                                self._tX( self.eventfilter.p2.x())+self.width()*math.cos(a),
-                                self._tY( self.eventfilter.p2.y())+self.width()*math.sin(a)  )
-
-
+            if self.inputwidget.la:
+                painter.setPen( pLocked )
+                painter.drawLine(   self._tX( prevPoint.x())-self.width()*math.cos(a),
+                                    self._tY( prevPoint.y())-self.width()*math.sin(a),
+                                    self._tX( prevPoint.x())+self.width()*math.cos(a),
+                                    self._tY( prevPoint.y())+self.width()*math.sin(a)  )
 
         #Draw distance
-        if self.inputwidget.ld:
+        if pointListLength>1 and self.inputwidget.ld:
             painter.setPen( pLocked )
-            painter.drawEllipse(    self._tX( self.eventfilter.p2.x() - self.inputwidget.d ),
-                                    self._tY( self.eventfilter.p2.y() + self.inputwidget.d ),
+            painter.drawEllipse(    self._tX( prevPoint.x() - self.inputwidget.d ),
+                                    self._tY( prevPoint.y() + self.inputwidget.d ),
                                     self._f( 2.0*self.inputwidget.d ),
                                     self._f( 2.0*self.inputwidget.d )  )
 
@@ -163,49 +168,60 @@ class CadPaintWidget(QWidget):
         if self.inputwidget.lx:
             painter.setPen( pLocked )
             if self.inputwidget.rx:
-                x = self._tX( self.eventfilter.p2.x()+self.inputwidget.x )
-            else:   
+                if pointListLength>1:
+                    x = self._tX( prevPoint.x()+self.inputwidget.x )
+                else:
+                    x = None
+            else:
                 x = self._tX( self.inputwidget.x )
-            painter.drawLine(   x,
-                                0,
-                                x,
-                                self.height() )
+            if x is not None:
+                painter.drawLine(   x,
+                                    0,
+                                    x,
+                                    self.height() )
 
         #Draw y
         if self.inputwidget.ly:
             painter.setPen( pLocked )
             if self.inputwidget.ry:
-                y = self._tY( self.eventfilter.p2.y()+self.inputwidget.y )
-            else:   
+                if pointListLength>1:
+                    y = self._tY( prevPoint.y()+self.inputwidget.y )
+                else:
+                    y = None
+            else:
                 y = self._tY( self.inputwidget.y )
-            painter.drawLine(   0,
+            if y is not None:
+                painter.drawLine(   0,
                                 y,
                                 self.width(),
                                 y )
 
         #Draw constr
         if not self.inputwidget.par and not self.inputwidget.per:
-            painter.setPen( pConstruction2 )
-            painter.drawLine(   self._tX( self.eventfilter.p2.x()),
-                                self._tY( self.eventfilter.p2.y()),
-                                self._tX( self.eventfilter.p3.x()),
-                                self._tY( self.eventfilter.p3.y())  )
+            if prevPoint is not None:
+                painter.setPen( pConstruction2 )
+                painter.drawLine(   self._tX( prevPoint.x()),
+                                    self._tY( prevPoint.y()),
+                                    self._tX( curPoint.x()),
+                                    self._tY( curPoint.y())  )
 
-            painter.setPen( pConstruction1 )
-            painter.drawLine(   self._tX( self.eventfilter.p1.x()),
-                                self._tY( self.eventfilter.p1.y()),
-                                self._tX( self.eventfilter.p2.x()),
-                                self._tY( self.eventfilter.p2.y())  )
+            if penulPoint is not None:
+                painter.setPen( pConstruction1 )
+                painter.drawLine(   self._tX( penulPoint.x()),
+                                    self._tY( penulPoint.y()),
+                                    self._tX( prevPoint.x()),
+                                    self._tY( prevPoint.y())  )
 
-        painter.setPen( pCursor )
-        painter.drawLine(   self._tX( self.eventfilter.p3.x())-5,
-                            self._tY( self.eventfilter.p3.y())-5,
-                            self._tX( self.eventfilter.p3.x())+5,
-                            self._tY( self.eventfilter.p3.y())+5  )
-        painter.drawLine(   self._tX( self.eventfilter.p3.x())-5,
-                            self._tY( self.eventfilter.p3.y())+5,
-                            self._tX( self.eventfilter.p3.x())+5,
-                            self._tY( self.eventfilter.p3.y())-5  )
+        if curPoint is not None:
+            painter.setPen( pCursor )
+            painter.drawLine(   self._tX( curPoint.x())-5,
+                                self._tY( curPoint.y())-5,
+                                self._tX( curPoint.x())+5,
+                                self._tY( curPoint.y())+5  )
+            painter.drawLine(   self._tX( curPoint.x())-5,
+                                self._tY( curPoint.y())+5,
+                                self._tX( curPoint.x())+5,
+                                self._tY( curPoint.y())-5  )
 
 
 

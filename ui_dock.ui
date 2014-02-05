@@ -123,20 +123,6 @@
     </item>
     <item row="1" column="0">
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
-       <widget class="QToolButton" name="relD">
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/plugins/cadinput/resources/delta.png</normaloff>:/plugins/cadinput/resources/delta.png</iconset>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
        <widget class="QToolButton" name="relA">
         <property name="text">
@@ -147,6 +133,9 @@
           <normaloff>:/plugins/cadinput/resources/delta.png</normaloff>:/plugins/cadinput/resources/delta.png</iconset>
         </property>
         <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
          <bool>true</bool>
         </property>
        </widget>
