@@ -61,6 +61,7 @@ class CadPaintWidget(QWidget):
         curPoint = self.eventfilter.cadPointList.currentPoint()
         prevPoint = self.eventfilter.cadPointList.previousPoint()
         penulPoint = self.eventfilter.cadPointList.penultimatePoint()
+        capabilities = self.eventfilter.cadPointList.constraintCapabilities
 
         if math.isnan( self._tX(0) ) or not self.inputwidget.active or not self.inputwidget.enabled:
             #on loading QGIS, it seems QgsMapToPixel is not ready and return NaNs...
@@ -128,8 +129,8 @@ class CadPaintWidget(QWidget):
 
 
         #Draw angle
-        if penulPoint is not None:
-            if self.inputwidget.ra:
+        if capabilities.absoluteAngle:
+            if self.inputwidget.ra and capabilities.relativeAngle:
                 a0 = math.atan2( -(prevPoint.y()-penulPoint.y()), prevPoint.x()-penulPoint.x() )
                 a = a0-math.radians(self.inputwidget.a)
             else:
@@ -155,20 +156,19 @@ class CadPaintWidget(QWidget):
                                     self._tY( prevPoint.y())+self.width()*math.sin(a)  )
 
         #Draw distance
-        if prevPoint is not None:
-            if self.inputwidget.ld:
-                painter.setPen( pLocked )
-                painter.drawEllipse(    self._tX( prevPoint.x() - self.inputwidget.d ),
-                                        self._tY( prevPoint.y() + self.inputwidget.d ),
-                                        self._f( 2.0*self.inputwidget.d ),
-                                        self._f( 2.0*self.inputwidget.d )  )
+        if capabilities.distance and self.inputwidget.ld:
+            painter.setPen( pLocked )
+            painter.drawEllipse(    self._tX( prevPoint.x() - self.inputwidget.d ),
+                                    self._tY( prevPoint.y() + self.inputwidget.d ),
+                                    self._f( 2.0*self.inputwidget.d ),
+                                    self._f( 2.0*self.inputwidget.d )  )
 
 
         #Draw x
         if self.inputwidget.lx:
             painter.setPen( pLocked )
             if self.inputwidget.rx:
-                if prevPoint is not None:
+                if capabilities.relativePos:
                     x = self._tX( prevPoint.x()+self.inputwidget.x )
                 else:
                     x = None
@@ -184,7 +184,7 @@ class CadPaintWidget(QWidget):
         if self.inputwidget.ly:
             painter.setPen( pLocked )
             if self.inputwidget.ry:
-                if prevPoint is not None:
+                if capabilities.relativePos:
                     y = self._tY( prevPoint.y()+self.inputwidget.y )
                 else:
                     y = None
