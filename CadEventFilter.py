@@ -192,19 +192,7 @@ class CadEventFilter(QObject):
         """
         previousPoint = self.cadPointList.previousPoint()
         penulPoint = self.cadPointList.penultimatePoint()
-
-        if previousPoint is not None:
-            dx =  point.x()-previousPoint.x()
-            dy =  point.y()-previousPoint.y()
-            dist = math.sqrt( point.sqrDist(previousPoint))
-        else:
-            dx, dy, dist = None, None, None
-
-        if penulPoint is not None:
-            ddx = previousPoint.x() - penulPoint.x()
-            ddy = previousPoint.y() - penulPoint.y()
-        else:
-            ddx, ddy = None, None
+        dx, dy, ddx, ddy, dist = None, None, None, None, None
 
 
         #################
@@ -218,14 +206,14 @@ class CadEventFilter(QObject):
                     pass
             else:
                 point.setX( self.inputwidget.x )
-   
+
             if self.snapSegment is not None and not self.inputwidget.ly:
                 # we will magnietize to the intersection of that segment and the lockedX !
                 y = CadIntersection.LineIntersectionAtX( self.snapSegment[1], self.snapSegment[2], point.x() )
                 point.setY( y )
         else:
             if self.inputwidget.rx:
-                    self.inputwidget.x = dx
+                self.inputwidget.x = point.x() - previousPoint.x()
             else:
                 self.inputwidget.x = point.x()
 
@@ -247,12 +235,20 @@ class CadEventFilter(QObject):
                 point.setX( x )
         else:
             if self.inputwidget.ry:
-                self.inputwidget.y = dy
+                self.inputwidget.y = point.y() - previousPoint.y()
+
             else:
                 self.inputwidget.y = point.y()
 
         #################
         # Angle constrain
+        if self.cadPointList.constraintCapabilities.absoluteAngle:
+            dx = point.x() - previousPoint.x()
+            dy = point.y() - previousPoint.y()
+        if self.inputwidget.ra and self.cadPointList.constraintCapabilities.relativeAngle:
+            ddx = previousPoint.x() - penulPoint.x()
+            ddy = previousPoint.y() - penulPoint.y()
+
         if self.cadPointList.constraintCapabilities.absoluteAngle and self.inputwidget.la:
             a = self.inputwidget.a/180.0*math.pi
             if self.inputwidget.ra:
@@ -294,6 +290,11 @@ class CadEventFilter(QObject):
 
         #################
         # Distance constrain
+        if self.cadPointList.constraintCapabilities.distance:
+            dx = point.x() - previousPoint.x()
+            dy = point.y() - previousPoint.y()
+            dist = math.sqrt(point.sqrDist(previousPoint))
+
         if self.cadPointList.constraintCapabilities.distance and self.inputwidget.ld:
             if dist == 0:
                 # handle case where mouse is over origin and distance constraint is enabled
@@ -319,7 +320,7 @@ class CadEventFilter(QObject):
         #Update the widget's x&y values (for display only)
         if self.inputwidget.rx:
             if self.cadPointList.constraintCapabilities.relativePos:
-                self.inputwidget.x = dx
+                self.inputwidget.x = point.x() - previousPoint.x()
             else:
                 self.inputwidget.rx = False
         if not self.inputwidget.rx:
@@ -327,7 +328,7 @@ class CadEventFilter(QObject):
 
         if self.inputwidget.ry:
             if self.cadPointList.constraintCapabilities.relativePos:
-                self.inputwidget.y = dy
+                self.inputwidget.y = point.y() - previousPoint.y()
             else:
                 self.inputwidget.ry = False
         if not self.inputwidget.ry:
