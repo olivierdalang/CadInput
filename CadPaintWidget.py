@@ -197,20 +197,22 @@ class CadPaintWidget(QWidget):
                                 y )
 
         #Draw constr
-        if penulPoint is not None and prevPoint is not None and curPoint is not None:
-            if not self.inputwidget.par and not self.inputwidget.per:
+        if not self.inputwidget.par and not self.inputwidget.per:
+            if prevPoint is not None:
                 painter.setPen( pConstruction2 )
                 painter.drawLine(   self._tX( prevPoint.x()),
                                     self._tY( prevPoint.y()),
                                     self._tX( curPoint.x()),
                                     self._tY( curPoint.y())  )
 
+            if penulPoint is not None:
                 painter.setPen( pConstruction1 )
                 painter.drawLine(   self._tX( penulPoint.x()),
                                     self._tY( penulPoint.y()),
                                     self._tX( prevPoint.x()),
                                     self._tY( prevPoint.y())  )
 
+        if curPoint is not None:
             painter.setPen( pCursor )
             painter.drawLine(   self._tX( curPoint.x())-5,
                                 self._tY( curPoint.y())-5,
