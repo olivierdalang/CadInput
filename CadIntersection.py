@@ -76,7 +76,8 @@ class CadIntersection():
 
         if DISC<=0:
             #no intersection or tangeant
-            pass
+            return None, None
+
         else:
             #first possible point
             ax = circleCenter.x() + (d*dy+sgn(dy)*dx*sqrt(r**2*dr**2-d**2))/(dr**2)
@@ -86,4 +87,4 @@ class CadIntersection():
             bx = circleCenter.x() + (d*dy-sgn(dy)*dx*sqrt(r**2*dr**2-d**2))/(dr**2)
             by = circleCenter.y() + (-d*dx-abs(dy)*sqrt(r**2*dr**2-d**2))/(dr**2)
 
-        return QgsPoint(ax,ay), QgsPoint(bx,by)
+            return QgsPoint(ax,ay), QgsPoint(bx,by)
