@@ -197,29 +197,21 @@ class CadEventFilter(QObject):
             dx =  point.x()-previousPoint.x()
             dy =  point.y()-previousPoint.y()
             dist = math.sqrt( point.sqrDist(previousPoint))
-            canConstrainAbsoluteAngle = True
-            canConstrainDistance = True
-            canConstrainRelativePos = True
         else:
             dx, dy, dist = None, None, None
-            canConstrainAbsoluteAngle = False
-            canConstrainDistance = False
-            canConstrainRelativePos = False
 
         if penulPoint is not None:
             ddx = previousPoint.x() - penulPoint.x()
             ddy = previousPoint.y() - penulPoint.y()
-            canConstrainRelativeAngle = True
         else:
             ddx, ddy = None, None
-            canConstrainRelativeAngle = False
 
 
         #################
         # X constrain
         if self.inputwidget.lx:
             if self.inputwidget.rx:
-                if canConstrainRelativePos:
+                if self.cadPointList.constraintCapabilities.relativePos:
                     point.setX( previousPoint.x() + self.inputwidget.x )
                 else:
                     # TODO raise error?
@@ -241,7 +233,7 @@ class CadEventFilter(QObject):
         # Y constrain
         if self.inputwidget.ly:
             if self.inputwidget.ry:
-                if canConstrainRelativeAngle:
+                if self.cadPointList.constraintCapabilities.relativeAngle:
                     point.setY( previousPoint.y() + self.inputwidget.y )
                 else:
                     # TODO raise error?
@@ -261,15 +253,15 @@ class CadEventFilter(QObject):
 
         #################
         # Angle constrain
-        if self.inputwidget.la and canConstrainAbsoluteAngle:
+        if self.inputwidget.la and self.cadPointList.constraintCapabilities.absoluteAngle:
             a = self.inputwidget.a/180.0*math.pi
             if self.inputwidget.ra:
-                if canConstrainRelativeAngle:
+                if self.cadPointList.constraintCapabilities.relativeAngle:
                     # We compute the angle relative to the last segment (0° is aligned with last segment)
                     lastA = math.atan2(ddy, ddx)
                     a += lastA
                 else:
-                    # TODO raise error?
+                    # if relative mode and not enough points: do absolute angle
                     pass
 
             cosA = math.cos( a )
@@ -293,17 +285,18 @@ class CadEventFilter(QObject):
                     point.setX( intP.x() )
                     point.setY( intP.y() )
         else:
-            if self.inputwidget.ra and canConstrainRelativeAngle:
-                lastA = math.atan2(ddy, ddx)
+            if self.cadPointList.constraintCapabilities.absoluteAngle:
+                if self.inputwidget.ra and self.cadPointList.constraintCapabilities.relativeAngle:
+                    lastA = math.atan2(ddy, ddx)
+                else:
+                    lastA = 0
                 self.inputwidget.a = (math.atan2( dy, dx )-lastA)/math.pi*180
-            elif not self.inputwidget.ra and canConstrainAbsoluteAngle:
-                self.inputwidget.a = math.atan2( dy, dx )/math.pi*180
             else:
                 self.inputwidget.a = None
 
         #################
         # Distance constrain
-        if canConstrainDistance and self.inputwidget.ld:
+        if self.cadPointList.constraintCapabilities.distance and self.inputwidget.ld:
             if dist == 0:
                 # handle case where mouse is over origin and distance constraint is enabled
                 # take arbitrary horizontal line
@@ -326,7 +319,7 @@ class CadEventFilter(QObject):
 
         #Update the widget's x&y values (for display only)
         if self.inputwidget.rx:
-            if canConstrainRelativePos:
+            if self.cadPointList.constraintCapabilities.relativePos:
                 self.inputwidget.x = dx
             else:
                 self.inputwidget.rx = False
@@ -334,7 +327,7 @@ class CadEventFilter(QObject):
             self.inputwidget.x = point.x()
 
         if self.inputwidget.ry:
-            if canConstrainRelativePos:
+            if self.cadPointList.constraintCapabilities.relativePos:
                 self.inputwidget.y = dy
             else:
                 self.inputwidget.ry = False

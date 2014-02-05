@@ -26,6 +26,7 @@ import operator as op
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
+from CadConstraintCapabilities import CadConstraintCapabilities
 from ui_dock import Ui_CadInputDock
 
 
@@ -105,7 +106,7 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
         self.widY.installEventFilter(self.linEditFilter)
 
         # not point at start, do not allow setting constraints
-        self.enableConstraints(0)
+        self.enableConstraints(CadConstraintCapabilities())
 
         # And finally add to the MainWindow
         self.iface.mainWindow().addDockWidget(Qt.LeftDockWidgetArea, self)
@@ -191,34 +192,25 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
         self.active = (self.iface.mapCanvas().mapTool() is not None and self.iface.mapCanvas().mapTool().isEditTool())
 
 
-    def enableConstraints(self, pointCount, previousCount=None):
-        if previousCount is not None and ( previousCount == pointCount or previousCount >= 3 and pointCount >= 3):
-            # do not trigger UI changes if nothing changed
-            return
+    def enableConstraints(self, cadConstraintCapabilities):
 
         # relative coordinatesonly available with 1 previous point
-        self.relX.setEnabled(pointCount>=2)
-        self.relY.setEnabled(pointCount>=2)
+        self.relX.setEnabled(cadConstraintCapabilities.relativePos)
+        self.relY.setEnabled(cadConstraintCapabilities.relativePos)
         # uncheck relative if there is not enough point
-        if pointCount < 2:
+        if not cadConstraintCapabilities.relativePos:
             self.relX.setChecked(False)
             self.relY.setChecked(False)
 
         # absolute angle only possible with 1 previous point
-        self.widA.setEnabled(pointCount>=2)
-        self.lockA.setEnabled(pointCount>=2)
+        self.widA.setEnabled(cadConstraintCapabilities.absoluteAngle)
+        self.lockA.setEnabled(cadConstraintCapabilities.absoluteAngle)
         # relative angle only available with 2 previous point
-        self.relA.setEnabled(pointCount>=3)
-        # uncheck relative if there is not enough point
-        if pointCount < 3:
-            self.relA.setChecked(False)
-        if previousCount == 2 and pointCount == 3:
-            # we we can have relative angle, set checked by default
-            self.relA.setChecked(True)
+        self.relA.setEnabled(cadConstraintCapabilities.relativeAngle)
 
         # relative distance only available with 1 previous point
-        self.widD.setEnabled(pointCount>=2)
-        self.lockD.setEnabled(pointCount>=2)
+        self.widD.setEnabled(cadConstraintCapabilities.distance)
+        self.lockD.setEnabled(cadConstraintCapabilities.distance)
 
 
     """
