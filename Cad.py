@@ -71,7 +71,6 @@ class Cad(QObject):
         self.iface.mapCanvas().layout().addWidget( self.paintwidget )
 
 
-
         # Create help action 
         self.helpAction = QAction( QIcon(":/plugins/cadinput/resources/about.png"), u"Help", self.iface.mainWindow())
         self.helpAction.triggered.connect( self.doHelpAction )
@@ -88,6 +87,7 @@ class Cad(QObject):
     def unload(self):
 
         #we remove the eventFilters
+        self.eventFilter.close()
         self.iface.mapCanvas().viewport().removeEventFilter( self.eventFilter )
         self.iface.mapCanvas().removeEventFilter( self.eventFilter )
 

@@ -64,6 +64,12 @@ class CadEventFilter(QObject):
         QgsProject.instance().readProject.connect(self.updateSnapper)
         QgsProject.instance().snapSettingsChanged.connect(self.updateSnapper) # TODO : does not work ! see http://hub.qgis.org/issues/9465
 
+    def close(self):
+        self.mapCanvas.layersChanged.disconnect(self.updateSnapper)
+        self.mapCanvas.scaleChanged.disconnect(self.updateSnapper)
+        QgsProject.instance().readProject.disconnect(self.updateSnapper)
+        QgsProject.instance().snapSettingsChanged.disconnect(self.updateSnapper)
+
     def updateSnapper(self):
         """
             Updates self.snapper to take into consideration layers changes, layers not displayed because of the scale *TODO* and the user's input */TODO*

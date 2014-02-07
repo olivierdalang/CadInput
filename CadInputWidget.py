@@ -65,7 +65,7 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
         self.setFocusPolicy(Qt.ClickFocus)
 
         # We connect the mapToolSet signal so we can enable/disable the widget
-        self.iface.mapCanvas().mapToolSet.connect( self.maptoolChanged )
+        self.iface.mapCanvas().mapToolSet.connect(self.maptoolChanged)
 
         # And we run it so it sets the right state upon loading
         self.maptoolChanged()
@@ -111,6 +111,7 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
         self.iface.mainWindow().addDockWidget(Qt.LeftDockWidgetArea, self)
 
     def closeEvent(self, event):
+        self.iface.mapCanvas().mapToolSet.disconnect( self.maptoolChanged )
         self.widA.removeEventFilter(self.linEditFilter)
         self.widD.removeEventFilter(self.linEditFilter)
         self.widX.removeEventFilter(self.linEditFilter)
