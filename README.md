@@ -58,7 +58,7 @@ Or send me some feedback at : olivier.dalang@gmail.com
 
 ### Features planned
 
-- [ ] incremental values lock (for instance 30def, or 10m grid)
+- [ ] incremental values lock (for instance 30deg, or 10m grid)
 - [ ] set origin (for absolute mode with custom origin)
 - [ ] intersection of segments / having segments as a true constraint (not only for parralel/perpendicular)
 - [ ] intersection of arcs / having arcs as a true constraint (not only for parralel/perpendicular)
@@ -79,6 +79,7 @@ Please submit your ideas on the tracker : https://github.com/olivierdalang/CadIn
 - 2014-01-31 - version 0.4 : 
     - improved performances on more complex files (thanks 3nids)
     - snapping preferences now taken into account)
+- 2014-02-09 - version 0.50 : better visuel feedback, several bugs fix and cleaner code
 
 ## Technical notes
 
