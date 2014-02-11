@@ -176,7 +176,7 @@ class CadEventFilter(QObject):
             self.inputwidget.keyPressEvent(event)
             # If the event is not accpted, we return False, so the event is propagated to the MapCanvas (and normal shortcuts should work)
             return event.isAccepted()
-        elif event.type() == QEvent.MouseButtonRelease and event.button() == Qt.RightButton:
+        elif event.type() == QEvent.MouseButtonRelease and event.button() == Qt.RightButton and event.spontaneous():
             # cancel digitization on right click
             self.cadPointList.empty()
             self.snapSegment = None # segment snapped at current position (if any)
