@@ -46,6 +46,12 @@ class CadPointList(list):
         self.insert(0, self[0])
         self.inputWidget.enableConstraints(len(self))
 
+    def removeLastPoint(self):
+        print len(self)
+        if len(self)>1:
+            del self[1]
+            self.inputWidget.enableConstraints(len(self))
+
     def currentPoint(self):
         if len(self):
             return self[0]

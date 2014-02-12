@@ -171,10 +171,14 @@ class CadEventFilter(QObject):
             # By returning True, we inform the eventSystem that the event must not be sent further (since a new event has been sent through QCoreApplication)
             return True
 
-        elif self.inputwidget.active and event.type() == QEvent.KeyPress:
-            # We redirect all key inputs to the inputwidget.
+        elif self.inputwidget.active and event.type() == QEvent.KeyPress and event.spontaneous:
+            # remove last point
+            if event.key() == Qt.Key_Backspace or event.key() == Qt.Key_Delete:
+                self.cadPointList.removeLastPoint()
+                return False
+            # otherwise redirect all key inputs to the inputwidget
             self.inputwidget.keyPressEvent(event)
-            # If the event is not accpted, we return False, so the event is propagated to the MapCanvas (and normal shortcuts should work)
+            # if inputWidget intercepted the event, this will True (event not propagated further)
             return event.isAccepted()
         elif event.type() == QEvent.MouseButtonRelease and event.button() == Qt.RightButton and event.spontaneous():
             # cancel digitization on right click
