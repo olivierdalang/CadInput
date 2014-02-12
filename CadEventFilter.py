@@ -171,7 +171,7 @@ class CadEventFilter(QObject):
             # By returning True, we inform the eventSystem that the event must not be sent further (since a new event has been sent through QCoreApplication)
             return True
 
-        elif self.inputwidget.active and event.type() == QEvent.KeyPress and event.spontaneous:
+        elif self.inputwidget.active and event.type() == QEvent.KeyPress and event.spontaneous():
             # remove last point
             if event.key() == Qt.Key_Backspace or event.key() == Qt.Key_Delete:
                 self.cadPointList.removeLastPoint()
