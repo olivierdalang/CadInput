@@ -193,6 +193,9 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
 
 
     def enableConstraints(self, nPoints):
+        # parallel and perpendicular availabe with 1 previous point
+        self.widPer.setEnabled( nPoints>1 )
+        self.widPar.setEnabled( nPoints>1 )
         # absolute angle only possible with 1 previous point
         self.widA.setEnabled( nPoints>1 )
         self.lockA.setEnabled( nPoints>1 )
@@ -291,12 +294,12 @@ class CadInputWidget(QDockWidget, Ui_CadInputDock):
     def c(self, value): self.widC.setChecked(value)
 
     @property
-    def per(self): return self.widPer.isChecked()
+    def per(self): return self.widPer.isEnabled() and self.widPer.isChecked()
     @per.setter
     def per(self, value): self.widPer.setChecked(value)
 
     @property
-    def par(self): return self.widPar.isChecked()
+    def par(self): return self.widPar.isEnabled() and self.widPar.isChecked()
     @par.setter
     def par(self, value): self.widPar.setChecked(value)
 

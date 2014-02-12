@@ -342,20 +342,22 @@ class CadEventFilter(QObject):
         previousPoint = self.cadPointList.previousPoint()
         penulPoint = self.cadPointList.penultimatePoint()
 
-        if self.snapSegment is not None:
+        # do not authorize per or par if there is no previous point
+        if previousPoint is None or self.snapSegment is None:
+            return
 
-            angle = math.atan2( self.snapSegment[1].y()-self.snapSegment[2].y(), self.snapSegment[1].x()-self.snapSegment[2].x() )
-            if self.inputwidget.ra:
-                lastangle = math.atan2(previousPoint.y()-penulPoint.y(),previousPoint.x()-penulPoint.x())
-                angle -= lastangle
+        angle = math.atan2( self.snapSegment[1].y()-self.snapSegment[2].y(), self.snapSegment[1].x()-self.snapSegment[2].x() )
+        if self.inputwidget.ra:
+            lastangle = math.atan2(previousPoint.y()-penulPoint.y(),previousPoint.x()-penulPoint.x())
+            angle -= lastangle
 
-            if self.inputwidget.par:
-                pass
-            elif self.inputwidget.per:
-                angle += math.pi / 2.0
+        if self.inputwidget.par:
+            pass
+        elif self.inputwidget.per:
+            angle += math.pi / 2.0
 
-            self.inputwidget.la = True
-            self.inputwidget.a = math.degrees(angle)      
+        self.inputwidget.la = True
+        self.inputwidget.a = math.degrees(angle)
     
 
     #####################################
