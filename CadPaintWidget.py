@@ -58,8 +58,14 @@ class CadPaintWidget(QgsMapCanvasItem):
         snapPoint = self.cadPointList.snapPoint
         snapSegment = self.cadPointList.snapSegment
         
-        curPointPix, prevPointPix, penulPointPix, snapSegmentPix1, snapSegmentPix2 = None, None, None, None, None
+        mupp = self.mapCanvas.getCoordinateTransform().mapUnitsPerPixel()
+            
+        if math.isnan( mupp ) or not self.inputWidget.active or not self.inputWidget.enabled:
+            #on loading QGIS, it seems QgsMapToPixel is not ready and return NaNs...
+            return
         
+        curPointPix, prevPointPix, penulPointPix, snapSegmentPix1, snapSegmentPix2 = None, None, None, None, None
+
         if curPoint is not None:
             curPointPix = self.toCanvasCoordinates(curPoint)
         if prevPoint is not None:
@@ -69,13 +75,6 @@ class CadPaintWidget(QgsMapCanvasItem):
         if snapSegment is not None:
             snapSegmentPix1 = self.toCanvasCoordinates(snapSegment[1])
             snapSegmentPix2 = self.toCanvasCoordinates(snapSegment[2])
-
-        mupp = self.mapCanvas.getCoordinateTransform().mapUnitsPerPixel()
-            
-        if math.isnan( mupp ) or not self.inputWidget.active or not self.inputWidget.enabled:
-            #on loading QGIS, it seems QgsMapToPixel is not ready and return NaNs...
-            return
-
 
         #This is used so the whole widget updates rather than just the painEvent region (probably under-optimal since painEvent is probably called twice)
         # self.update()
