@@ -31,7 +31,6 @@ from CadInputWidget import CadInputWidget
 from CadEventFilter import CadEventFilter
 from CadPaintWidget import CadPaintWidget
 from CadPointList import CadPointList
-
 from CadHelp import CadHelp
 
 
@@ -42,20 +41,17 @@ class Cad(QObject):
         self.iface = iface
 
     def initGui(self):
-        #QgsMessageLog.logMessage("CadInput is being initialized","CadInput")
-        
-        # CadInputWidget : this widget displays the inputs allowing numerical entry
-        self.inputwidget = CadInputWidget(self.iface)
+        # CadinputWidget : this widget displays the inputs allowing numerical entry
+        self.inputWidget = CadInputWidget(self.iface)
 
         # CadPointList : this stores all the points
-        self.cadPointList = CadPointList(self.inputwidget)
+        self.cadPointList = CadPointList(self.inputWidget)
 
-        # CadPaintWidget : this widget displays graphical informations in front of the mapCanvas
-        self.paintwidget = CadPaintWidget(self.iface.mapCanvas(), self.inputwidget, self.cadPointList)
+        # CadpaintWidget : this widget displays graphical informations in front of the mapCanvas
+        self.paintWidget = CadPaintWidget(self.iface.mapCanvas(), self.inputWidget, self.cadPointList)
 
         # CadEventFilter : this widget will filter the mouseEvents and constrain them if needed
-        self.eventFilter = CadEventFilter(self.iface, self.inputwidget, self.cadPointList)
-
+        self.eventFilter = CadEventFilter(self.iface, self.cadPointList, self.inputWidget, self.paintWidget)
 
 
         #We need the canvas's viewport to track the mouse for mouseMoveEvents to happen
@@ -67,20 +63,13 @@ class Cad(QObject):
         #we install the eventFilter on the canvas itself to get the key events
         self.iface.mapCanvas().installEventFilter( self.eventFilter )
 
-        #we add the paintwidget as a child of the mapCanvas (using a layout so it takes all available space)
-        if self.iface.mapCanvas().layout() is None:
-            layout = QHBoxLayout()
-            layout.setContentsMargins( QMargins() )
-            self.iface.mapCanvas().setLayout( layout )
-        self.iface.mapCanvas().layout().addWidget( self.paintwidget )
-
 
         # Create help action 
         self.helpAction = QAction( QIcon(":/plugins/cadinput/resources/about.png"), u"Help", self.iface.mainWindow())
         self.helpAction.triggered.connect( self.doHelpAction )
 
         # Create enable action 
-        self.enableAction = self.inputwidget.enableAction
+        self.enableAction = self.inputWidget.enableAction
 
         # Add menu and toolbars items
         self.iface.addPluginToMenu(u"&CadInput", self.helpAction)
@@ -89,16 +78,15 @@ class Cad(QObject):
 
 
     def unload(self):
-
         #we remove the eventFilters
         self.eventFilter.close()
         self.iface.mapCanvas().viewport().removeEventFilter( self.eventFilter )
         self.iface.mapCanvas().removeEventFilter( self.eventFilter )
 
         #and we remove the widgets also
-        self.inputwidget.close()
-        self.inputwidget.deleteLater()
-        self.paintwidget.deleteLater()
+        self.inputWidget.close()
+        self.inputWidget.deleteLater()
+        self.iface.mapCanvas().scene().removeItem(self.paintWidget)
 
         #and remove the item menu
         self.iface.removePluginMenu(u"&CadInput", self.helpAction)
