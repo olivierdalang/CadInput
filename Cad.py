@@ -30,6 +30,7 @@ import resources_rc
 from CadInputWidget import CadInputWidget
 from CadEventFilter import CadEventFilter
 from CadPaintWidget import CadPaintWidget
+from CadPointList import CadPointList
 
 from CadHelp import CadHelp
 
@@ -46,11 +47,14 @@ class Cad(QObject):
         # CadInputWidget : this widget displays the inputs allowing numerical entry
         self.inputwidget = CadInputWidget(self.iface)
 
-        # CadEventFilter : this widget will filter the mouseEvents and constrain them if needed
-        self.eventFilter = CadEventFilter(self.iface, self.inputwidget)
+        # CadPointList : this stores all the points
+        self.cadPointList = CadPointList(self.inputwidget)
 
         # CadPaintWidget : this widget displays graphical informations in front of the mapCanvas
-        self.paintwidget = CadPaintWidget(self.iface, self.inputwidget, self.eventFilter)
+        self.paintwidget = CadPaintWidget(self.iface.mapCanvas(), self.inputwidget, self.cadPointList)
+
+        # CadEventFilter : this widget will filter the mouseEvents and constrain them if needed
+        self.eventFilter = CadEventFilter(self.iface, self.inputwidget, self.cadPointList)
 
 
 

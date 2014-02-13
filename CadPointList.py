@@ -29,6 +29,8 @@ class CadPointList(list):
     def __init__(self, inputWidget):
         list.__init__(self)
         self.inputWidget = inputWidget
+        self.snapPoint = None
+        self.snapSegment = None
 
     def empty(self):
         self[:] = []
