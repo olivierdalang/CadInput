@@ -63,7 +63,7 @@ class CadPaintWidget(QgsMapCanvasItem):
         if math.isnan( mupp ) or not self.inputWidget.active or not self.inputWidget.enabled:
             #on loading QGIS, it seems QgsMapToPixel is not ready and return NaNs...
             return
-        
+
         curPointPix, prevPointPix, penulPointPix, snapSegmentPix1, snapSegmentPix2 = None, None, None, None, None
 
         if curPoint is not None:
@@ -157,12 +157,13 @@ class CadPaintWidget(QgsMapCanvasItem):
         #Draw x
         if self.inputWidget.lx:
             painter.setPen( self.pLocked )
-            x = prevPointPix.x()
             if self.inputWidget.rx:
                 if pointListLength>1:
-                    x += self.inputWidget.x / mupp
+                    x = self.inputWidget.x / mupp + prevPointPix.x()
                 else:
                     x = None
+            else:
+                x = self.toCanvasCoordinates( QgsPoint( self.inputWidget.x, 0) ).x()
             if x is not None:
                 painter.drawLine(   x,
                                     0,
@@ -172,12 +173,13 @@ class CadPaintWidget(QgsMapCanvasItem):
         #Draw y
         if self.inputWidget.ly:
             painter.setPen( self.pLocked )
-            y = prevPointPix.y()
             if self.inputWidget.ry:
                 if pointListLength>1:
-                    y += self.inputWidget.y / mupp
+                    y = self.inputWidget.y / mupp + prevPointPix.y()
                 else:
                     y = None
+            else:
+                y = self.toCanvasCoordinates( QgsPoint( 0, self.inputWidget.y) ).y()
             if y is not None:
                 painter.drawLine(   0,
                                     y,
