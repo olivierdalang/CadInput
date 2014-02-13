@@ -151,9 +151,9 @@ class CadPaintWidget(QWidget):
             if self.inputwidget.la:
                 painter.setPen( pLocked )
                 painter.drawLine(   self._tX( prevPoint.x())-self.width()*math.cos(a),
-                                    self._tY( prevPoint.y())-self.width()*math.sin(a),
+                                    self._tY( prevPoint.y())-self.height()*math.sin(a),
                                     self._tX( prevPoint.x())+self.width()*math.cos(a),
-                                    self._tY( prevPoint.y())+self.width()*math.sin(a)  )
+                                    self._tY( prevPoint.y())+self.height()*math.sin(a)  )
 
         #Draw distance
         if pointListLength>1 and self.inputwidget.ld:
