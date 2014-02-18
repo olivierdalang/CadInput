@@ -78,14 +78,17 @@ class Cad(QObject):
 
 
     def unload(self):
-        #we remove the eventFilters
+        # unload event filter
         self.eventFilter.close()
         self.iface.mapCanvas().viewport().removeEventFilter( self.eventFilter )
         self.iface.mapCanvas().removeEventFilter( self.eventFilter )
 
-        #and we remove the widgets also
+        # unload input widget
         self.inputWidget.close()
         self.inputWidget.deleteLater()
+
+        # unload paint widget (map canvas item)
+        self.paintWidget.close()
         self.iface.mapCanvas().scene().removeItem(self.paintWidget)
 
         #and remove the item menu

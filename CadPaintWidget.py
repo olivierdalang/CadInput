@@ -42,6 +42,11 @@ class CadPaintWidget(QgsMapCanvasItem):
         self.pSnapLine = QPen(QColor(200,100,50,150), 1, Qt.DashLine)
         self.pCursor = QPen(QColor(100,255,100, 255), 2)
 
+        self.mapCanvas.extentsChanged.connect(self.updateRect)
+
+    def close(self):
+        self.mapCanvas.extentsChanged.disconnect(self.updateRect)
+
     def updateRect(self):
         self.setRect( self.mapCanvas.extent() )
         self.setVisible( self.inputWidget.active )
