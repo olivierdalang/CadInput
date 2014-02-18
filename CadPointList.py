@@ -20,7 +20,7 @@
  ***************************************************************************/
 """
 
-from qgis.core import QgsPoint
+from qgis.core import QgsPoint, QgsRectangle
 
 class CadPointList(list):
     """
@@ -29,6 +29,11 @@ class CadPointList(list):
     def __init__(self, inputWidget):
         list.__init__(self)
         self.inputWidget = inputWidget
+        self.snapPoint = None
+        self.snapSegment = None
+
+    #########################
+    # Modification
 
     def empty(self):
         self[:] = []
@@ -51,6 +56,10 @@ class CadPointList(list):
         if len(self)>1:
             del self[1]
             self.inputWidget.enableConstraints(len(self))
+
+
+    #########################
+    # Helpers
 
     def currentPoint(self):
         if len(self):
