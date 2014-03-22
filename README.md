@@ -80,6 +80,7 @@ Please submit your ideas on the tracker : https://github.com/olivierdalang/CadIn
     - improved performances on more complex files (thanks 3nids)
     - snapping preferences now taken into account)
 - 2014-02-09 - version 0.50 : better visuel feedback, several bugs fix and cleaner code
+- 2014-03-22 - version 0.60 : several bug fixes
 
 ## Technical notes
 
