@@ -34,7 +34,7 @@ class CadIntersection():
         y2 = linePoint2.y()
         dx = x2 - x1
         dy = y2 - y1
-        if dy==0:
+        if dx==0:
             y = y1
         else:
             y = y1+(dy * (x-x1) ) / dx
