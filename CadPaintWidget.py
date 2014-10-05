@@ -156,7 +156,7 @@ class CadPaintWidget(QgsMapCanvasItem):
         #Draw distance
         if pointListLength>1 and self.inputWidget.ld:
             painter.setPen( self.pLocked )
-            r = self.inputWidget.d / self.mapCanvas.getCoordinateTransform().mapUnitsPerPixel()
+            r = self.inputWidget.d / mupp
             painter.drawEllipse( prevPointPix, r, r )
 
         #Draw x
