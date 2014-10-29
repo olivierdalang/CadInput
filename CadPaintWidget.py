@@ -180,7 +180,8 @@ class CadPaintWidget(QgsMapCanvasItem):
             painter.setPen( self.pLocked )
             if self.inputWidget.ry:
                 if pointListLength>1:
-                    y = self.inputWidget.y / mupp + prevPointPix.y()
+                    # y is reversed!
+                    y = -self.inputWidget.y / mupp + prevPointPix.y()
                 else:
                     y = None
             else:
