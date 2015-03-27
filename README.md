@@ -1,5 +1,6 @@
-# CadInput
+# __THIS PLUGIN IS DEPRECATED SINCE IT HAS BEEN ADDED TO QGIS CORE__
 
+# CadInput
 
 CadInput is a __PROTOTYPE__ QGIS Python plugin that allows to numerically constrain the cursor to achieve efficient and precise digitizing, as possible in CAD packages, with any QGIS tool.
 
